@@ -21,6 +21,20 @@ jobs:
       with:
         go-version: 1.15
 
+    - name: Update apt
+      env:
+          DEBIAN_FRONTEND: noninteractive
+      run: 
+        sudo apt-get update -qq -o Acquire::Retries=3
+
+    - name: Install libvips
+      env:
+        DEBIAN_FRONTEND: noninteractive
+      run:
+        # we only need the library
+        sudo apt-get install --fix-missing -qq -o Acquire::Retries=3
+          libvips-dev 
+
     - name: Prepare go modules
       run: go env -w GO111MODULE=auto CGO_ENABLED=1 GOOS=linux GOARCH=amd64 && go get -d -v
 
