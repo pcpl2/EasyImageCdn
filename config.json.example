@@ -1,0 +1,8 @@
+{
+    "adminHttpAddr": "0.0.0.0:9324",
+    "publicHttpAddr": "0.0.0.0:9555",
+    "apiKey": "00000000-0000-0000-0000-000000000000",
+    "apiKeyHeader": "key",
+    "filesPath": "/var/lib/images",
+    "convertToRes": "1024x720,800x600"
+}

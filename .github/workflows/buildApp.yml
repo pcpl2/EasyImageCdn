@@ -1,0 +1,28 @@
+# This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+
+name: Build cdn server on commit
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.15
+
+    - name: Prepare go modules
+      run: go env -w GO111MODULE=auto CGO_ENABLED=1 GOOS=linux GOARCH=amd64 && go get -d -v
+
+    - name: Start build script
+      run: go build -v ./...
