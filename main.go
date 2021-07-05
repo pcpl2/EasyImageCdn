@@ -195,20 +195,20 @@ func convertImage(imagePath string, command []convertCommand) {
 		imageName := "source"
 		imageExtension := ""
 
-		if element.WebP {
-			_, err := imagePrt.Convert(bimg.WEBP)
-			if err != nil {
-				fmt.Fprintln(os.Stderr, err)
-			}
-			imageExtension = ".webp"
-		}
-
 		if element.ConvertRes {
 			_, err := imagePrt.ForceResize(element.TargetRes.Width, element.TargetRes.Height)
 			if err != nil {
 				fmt.Fprintln(os.Stderr, err)
 			}
 			imageName = strconv.Itoa(element.TargetRes.Width) + "x" + strconv.Itoa(element.TargetRes.Height)
+		}
+
+		if element.WebP {
+			_, err := imagePrt.Convert(bimg.WEBP)
+			if err != nil {
+				fmt.Fprintln(os.Stderr, err)
+			}
+			imageExtension = ".webp"
 		}
 
 		bimg.Write(element.Path+imageName+imageExtension, imagePrt.Image())
