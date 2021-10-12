@@ -4,5 +4,6 @@
     "apiKey": "00000000-0000-0000-0000-000000000000",
     "apiKeyHeader": "key",
     "filesPath": "/var/lib/images",
-    "convertToRes": "1024x720,800x600"
+    "convertToRes": "1024x720,800x600",
+    "maxFileSize": 10
 }

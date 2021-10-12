@@ -24,6 +24,7 @@ type apiConfig struct {
 	APIKeyHeader   string `json:"apiKeyHeader"`
 	FilesPath      string `json:"filesPath"`
 	ConvertToRes   string `json:"convertToRes"`
+	MaxFileSize    int    `json:"maxFileSize"`
 }
 
 type imagePayload struct {
@@ -50,6 +51,8 @@ func loadConfig() error {
 	if os.Getenv("IN_DOCKER") == "1" {
 		println("I'm in Docker :)")
 
+		maxFilesize, _ := strconv.Atoi(os.Getenv("MAX_FILE_SIZE"))
+
 		config = apiConfig{
 			AdminHTTPAddr:  os.Getenv("ADMIN_HTTP_ADDR"),
 			PublicHttpAddr: os.Getenv("PUBLIC_HTTP_ADDR"),
@@ -57,6 +60,7 @@ func loadConfig() error {
 			APIKeyHeader:   os.Getenv("API_KEY_HEADER"),
 			FilesPath:      os.Getenv("FILES_PATH"),
 			ConvertToRes:   os.Getenv("CONVERT_TO_RES"),
+			MaxFileSize:    maxFilesize,
 		}
 	} else {
 		configFile, err := os.Open("config.json")
@@ -265,6 +269,7 @@ func main() {
 	publicServer := &fasthttp.Server{
 		Handler:               publicRequestHandler,
 		NoDefaultServerHeader: true,
+		MaxRequestBodySize:    config.MaxFileSize * 1024 * 1024,
 	}
 
 	if len(config.PublicHttpAddr) > 0 {
