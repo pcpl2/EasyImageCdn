@@ -242,6 +242,7 @@ func main() {
 	adminServer := &fasthttp.Server{
 		Handler:               adminRequestHandler,
 		NoDefaultServerHeader: true,
+		MaxRequestBodySize:    config.MaxFileSize * 1024 * 1024,
 	}
 
 	if len(config.AdminHTTPAddr) > 0 {
@@ -269,7 +270,6 @@ func main() {
 	publicServer := &fasthttp.Server{
 		Handler:               publicRequestHandler,
 		NoDefaultServerHeader: true,
-		MaxRequestBodySize:    config.MaxFileSize * 1024 * 1024,
 	}
 
 	if len(config.PublicHttpAddr) > 0 {
