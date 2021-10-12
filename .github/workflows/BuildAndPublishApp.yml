@@ -61,3 +61,9 @@ jobs:
         run: |
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+    - uses: ncipollo/release-action@v1
+      with:
+        name: Release ${{ github.event.inputs.version }}
+        tag: ${{ github.event.inputs.version }}
+        token: ${{ secrets.GITHUB_TOKEN }}
