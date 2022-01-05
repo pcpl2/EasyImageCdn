@@ -13,8 +13,11 @@ import (
 	"strings"
 
 	"github.com/h2non/bimg"
+	"github.com/joho/godotenv"
 
 	"github.com/valyala/fasthttp"
+
+	models "imageConverter.pcpl2lab.ovh/models"
 )
 
 type apiConfig struct {
@@ -25,11 +28,6 @@ type apiConfig struct {
 	FilesPath      string `json:"filesPath"`
 	ConvertToRes   string `json:"convertToRes"`
 	MaxFileSize    int    `json:"maxFileSize"`
-}
-
-type imagePayload struct {
-	ID    string `json:"id"`
-	Image string `json:"image"`
 }
 
 type resElement struct {
@@ -118,7 +116,7 @@ func postNewImage(ctx *fasthttp.RequestCtx) {
 		return
 	}
 
-	var Payload imagePayload
+	var Payload models.ImagePayload
 	err := json.Unmarshal(ctx.Request.Body(), &Payload)
 
 	if err != nil {
@@ -220,8 +218,14 @@ func convertImage(imagePath string, command []convertCommand) {
 }
 
 func main() {
+	err := godotenv.Load(".env")
+
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
 	log.Print("Loading config..")
-	err := loadConfig()
+
+	err = loadConfig()
 	if err != nil {
 		log.Print("*ERROR* Failed to load config " + err.Error())
 		return
