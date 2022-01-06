@@ -1,12 +1,12 @@
-FROM alpine:3.14 as libvipsBuilder
+FROM alpine:3.15 as libvipsBuilder
 
 # Environment Variables
-ARG LIBVIPS_VERSION_MAJOR_MINOR=8.11
-ARG LIBVIPS_VERSION_PATCH=2
+ARG LIBVIPS_VERSION_MAJOR_MINOR=8.12
+ARG LIBVIPS_VERSION_PATCH=1
 ARG MOZJPEG_VERSION="v3.3.1"
 
 # Install dependencies
-RUN echo "http://dl-cdn.alpinelinux.org/alpine/v3.11/community" >> /etc/apk/repositories && \
+RUN echo "http://dl-cdn.alpinelinux.org/alpine/v3.15/community" >> /etc/apk/repositories && \
     apk update && \
     apk upgrade && \
     apk add --update \
@@ -45,7 +45,7 @@ RUN echo 'Install libvips' && \
     rm -rf /var/cache/apk/*
 
 
-FROM golang:alpine AS builder
+FROM golang:1.17-alpine3.15 AS builder
 
 WORKDIR /build
 
