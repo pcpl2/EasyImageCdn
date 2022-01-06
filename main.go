@@ -20,30 +20,8 @@ import (
 	models "imageConverter.pcpl2lab.ovh/models"
 )
 
-type apiConfig struct {
-	AdminHTTPAddr  string `json:"adminHttpAddr"`
-	PublicHttpAddr string `json:"publicHttpAddr"`
-	APIKey         string `json:"apiKey"`
-	APIKeyHeader   string `json:"apiKeyHeader"`
-	FilesPath      string `json:"filesPath"`
-	ConvertToRes   string `json:"convertToRes"`
-	MaxFileSize    int    `json:"maxFileSize"`
-}
-
-type resElement struct {
-	Width  int
-	Height int
-}
-
-type convertCommand struct {
-	Path       string
-	WebP       bool
-	ConvertRes bool
-	TargetRes  resElement
-}
-
-var config apiConfig
-var resolutions []resElement
+var config models.ApiConfig
+var resolutions []models.ResElement
 
 func loadConfig() error {
 	if os.Getenv("IN_DOCKER") == "1" {
@@ -51,7 +29,7 @@ func loadConfig() error {
 
 		maxFilesize, _ := strconv.Atoi(os.Getenv("MAX_FILE_SIZE"))
 
-		config = apiConfig{
+		config = models.ApiConfig{
 			AdminHTTPAddr:  os.Getenv("ADMIN_HTTP_ADDR"),
 			PublicHttpAddr: os.Getenv("PUBLIC_HTTP_ADDR"),
 			APIKey:         os.Getenv("API_KEY"),
@@ -82,13 +60,13 @@ func loadConfig() error {
 }
 
 func loadResolutions() {
-	resolutions = []resElement{}
+	resolutions = []models.ResElement{}
 	resList := strings.Split(config.ConvertToRes, ",")
 	for _, element := range resList {
 		res := strings.Split(element, "x")
 		width, _ := strconv.Atoi(res[0])
 		height, _ := strconv.Atoi(res[1])
-		resolutions = append(resolutions, resElement{
+		resolutions = append(resolutions, models.ResElement{
 			Width:  width,
 			Height: height,
 		})
@@ -159,23 +137,23 @@ func postNewImage(ctx *fasthttp.RequestCtx) {
 		panic(err)
 	}
 
-	queueList := []convertCommand{}
+	queueList := []models.ConvertCommand{}
 
-	queueList = append(queueList, convertCommand{
+	queueList = append(queueList, models.ConvertCommand{
 		Path:       imageFolderPath + "/",
 		WebP:       true,
 		ConvertRes: false,
 	})
 
 	for _, element := range resolutions {
-		queueList = append(queueList, convertCommand{
+		queueList = append(queueList, models.ConvertCommand{
 			Path:       imageFolderPath + "/",
 			WebP:       true,
 			ConvertRes: true,
 			TargetRes:  element,
 		})
 
-		queueList = append(queueList, convertCommand{
+		queueList = append(queueList, models.ConvertCommand{
 			Path:       imageFolderPath + "/",
 			WebP:       false,
 			ConvertRes: true,
@@ -186,7 +164,7 @@ func postNewImage(ctx *fasthttp.RequestCtx) {
 	convertImage(sourcePath, queueList)
 }
 
-func convertImage(imagePath string, command []convertCommand) {
+func convertImage(imagePath string, command []models.ConvertCommand) {
 	buffer, err := bimg.Read(imagePath)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
