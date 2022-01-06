@@ -19,6 +19,11 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	if config.APIKey == "" || config.APIKey == "00000000-0000-0000-0000-000000000000" {
+		log.Fatalln("*ERROR* The application will not start without setting the value API_KEY")
+	}
+
 	log.Print("Configuration loaded.")
 
 	adminRequestHandler := func(ctx *fasthttp.RequestCtx) {
