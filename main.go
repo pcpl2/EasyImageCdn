@@ -2,12 +2,14 @@ package main
 
 import (
 	"log"
+	"strings"
 
 	"github.com/valyala/fasthttp"
 
 	biz "imageConverter.pcpl2lab.ovh/biz"
 
 	aApi "imageConverter.pcpl2lab.ovh/controllers/adminApis"
+	pApi "imageConverter.pcpl2lab.ovh/controllers/publicApis"
 )
 
 func main() {
@@ -43,17 +45,16 @@ func main() {
 		}()
 	}
 
-	fs := &fasthttp.FS{
-		Root:               config.FilesPath,
-		GenerateIndexPages: false,
-		Compress:           true,
-		AcceptByteRange:    false,
-	}
-
-	fsHandler := fs.NewRequestHandler()
-
 	publicRequestHandler := func(ctx *fasthttp.RequestCtx) {
-		fsHandler(ctx)
+		spath := strings.Split(string(ctx.Path()), "/")
+		if spath[1] == "" {
+			ctx.Error("", fasthttp.StatusNotFound)
+		}
+
+		if spath[2] == "" {
+			ctx.Error("", fasthttp.StatusNotFound)
+		}
+		pApi.GetImage(ctx, spath[1], spath[2])
 	}
 
 	publicServer := &fasthttp.Server{
