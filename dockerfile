@@ -64,7 +64,7 @@ FROM busybox AS builder-user
 RUN addgroup -g 10002 appUser && \
     adduser -D -u 10003 -G appUser appUser
 
-FROM alpine:3.14
+FROM alpine:3.15
 RUN apk add --no-cache libwebp glib expat fftw-double-libs orc lcms2 librsvg cairo libexif
 COPY --from=builder /build/imageCdn /
 COPY --from=builder-user /etc/passwd /etc/passwd
