@@ -1,4 +1,6 @@
-# 0.0.2
+# 0.2
+ TODO
+# 0.1.2
 
 * Implemented detect image format by accept in browser.
 * Updated go version to 1.17
