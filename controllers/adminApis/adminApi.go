@@ -24,6 +24,7 @@ import (
 func PostNewImage(ctx *fasthttp.RequestCtx) {
 	config, err := biz.GetConfig()
 	if err != nil {
+		ctx.Error("", fasthttp.StatusInternalServerError)
 		log.Fatal(err)
 	}
 
