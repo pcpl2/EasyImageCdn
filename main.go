@@ -47,12 +47,19 @@ func main() {
 
 	publicRequestHandler := func(ctx *fasthttp.RequestCtx) {
 		spath := strings.Split(string(ctx.Path()), "/")
+		if len(spath) < 3 {
+			ctx.Error("", fasthttp.StatusNotFound)
+			return
+		}
+
 		if spath[1] == "" {
 			ctx.Error("", fasthttp.StatusNotFound)
+			return
 		}
 
 		if spath[2] == "" {
 			ctx.Error("", fasthttp.StatusNotFound)
+			return
 		}
 		pApi.GetImage(ctx, spath[1], spath[2])
 	}
