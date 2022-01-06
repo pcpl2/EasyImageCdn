@@ -27,8 +27,6 @@ func main() {
 	log.Print("Configuration loaded.")
 
 	adminRequestHandler := func(ctx *fasthttp.RequestCtx) {
-		ctx.Response.Header.Set("x-powered-by", "PHP/7.3.23")
-
 		switch string(ctx.Path()) {
 		case "/v1/newImage":
 			aApi.PostNewImage(ctx)

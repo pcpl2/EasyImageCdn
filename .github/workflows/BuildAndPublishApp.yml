@@ -11,7 +11,7 @@ on:
           required: true
 jobs:
   build:
-    name: Build Api
+    name: Build and publish
     runs-on: ubuntu-latest
         
     steps:
@@ -35,6 +35,12 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GH_TOKEN }}
 
+    - name: Login to Docker hub
+      uses: docker/login-action@v1 
+      with:
+        username: ${{ secrets.DH_USERNAME }}
+        password: ${{ secrets.DH_TOKEN }}
+
     - name: Extract metadata (tags, labels) for Docker
       id: meta
       uses: docker/metadata-action@v3
@@ -43,13 +49,14 @@ jobs:
           org.opencontainers.image.version=${{ github.event.inputs.version }}
         images: |
           ghcr.io/pcpl2/easy_image_cdn
+          pcpl2/easy_image_cdn
 
     - name: buildDocker
       uses: docker/build-push-action@v2
       with:
         context: .
         push: true
-        tags: ghcr.io/pcpl2/easy_image_cdn:${{ github.event.inputs.version }}
+        tags:  pcpl2/easy_image_cdn:${{ github.event.inputs.version }},ghcr.io/pcpl2/easy_image_cdn:${{ github.event.inputs.version }}
         cache-from: type=local,src=/tmp/.buildx-cache
         cache-to: type=local,dest=/tmp/.buildx-cache-new
         
