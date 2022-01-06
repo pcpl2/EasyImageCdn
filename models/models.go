@@ -1,13 +1,13 @@
 package models
 
 type ApiConfig struct {
-	AdminHTTPAddr  string `json:"adminHttpAddr"`
-	PublicHttpAddr string `json:"publicHttpAddr"`
-	APIKey         string `json:"apiKey"`
-	APIKeyHeader   string `json:"apiKeyHeader"`
-	FilesPath      string `json:"filesPath"`
-	ConvertToRes   string `json:"convertToRes"`
-	MaxFileSize    int    `json:"maxFileSize"`
+	AdminHTTPAddr  string
+	PublicHttpAddr string
+	APIKey         string
+	APIKeyHeader   string
+	FilesPath      string
+	MaxFileSize    int
+	Resolutions    []ResElement
 }
 
 type ResElement struct {

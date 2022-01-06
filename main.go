@@ -6,78 +6,29 @@ import (
 	"fmt"
 	"strconv"
 
-	"io/ioutil"
 	"log"
 	"net/url"
 	"os"
 	"strings"
 
 	"github.com/h2non/bimg"
-	"github.com/joho/godotenv"
 
 	"github.com/valyala/fasthttp"
 
+	biz "imageConverter.pcpl2lab.ovh/biz"
 	models "imageConverter.pcpl2lab.ovh/models"
 )
 
-var config models.ApiConfig
-var resolutions []models.ResElement
-
-func loadConfig() error {
-	if os.Getenv("IN_DOCKER") == "1" {
-		println("I'm in Docker :)")
-
-		maxFilesize, _ := strconv.Atoi(os.Getenv("MAX_FILE_SIZE"))
-
-		config = models.ApiConfig{
-			AdminHTTPAddr:  os.Getenv("ADMIN_HTTP_ADDR"),
-			PublicHttpAddr: os.Getenv("PUBLIC_HTTP_ADDR"),
-			APIKey:         os.Getenv("API_KEY"),
-			APIKeyHeader:   os.Getenv("API_KEY_HEADER"),
-			FilesPath:      os.Getenv("FILES_PATH"),
-			ConvertToRes:   os.Getenv("CONVERT_TO_RES"),
-			MaxFileSize:    maxFilesize,
-		}
-	} else {
-		configFile, err := os.Open("config.json")
-		if err != nil {
-			return err
-		}
-		defer configFile.Close()
-
-		byteValue, err := ioutil.ReadAll(configFile)
-		if err != nil {
-			return err
-		}
-
-		err = json.Unmarshal(byteValue, &config)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func loadResolutions() {
-	resolutions = []models.ResElement{}
-	resList := strings.Split(config.ConvertToRes, ",")
-	for _, element := range resList {
-		res := strings.Split(element, "x")
-		width, _ := strconv.Atoi(res[0])
-		height, _ := strconv.Atoi(res[1])
-		resolutions = append(resolutions, models.ResElement{
-			Width:  width,
-			Height: height,
-		})
-	}
-}
-
-func validateAuth(ctx *fasthttp.RequestCtx) bool {
+func validateAuth(ctx *fasthttp.RequestCtx, config models.ApiConfig) bool {
 	return string(ctx.Request.Header.Peek(config.APIKeyHeader)) == config.APIKey
 }
 
 func postNewImage(ctx *fasthttp.RequestCtx) {
+	config, err := biz.GetConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	if !ctx.IsPost() {
 		ctx.Error("", fasthttp.StatusNoContent)
 		log.Print("*ERROR* invalid method")
@@ -88,14 +39,14 @@ func postNewImage(ctx *fasthttp.RequestCtx) {
 		return
 	}
 
-	if !validateAuth(ctx) {
+	if !validateAuth(ctx, config) {
 		ctx.Error("", fasthttp.StatusNoContent)
 		log.Print("*ERROR* Auth error")
 		return
 	}
 
 	var Payload models.ImagePayload
-	err := json.Unmarshal(ctx.Request.Body(), &Payload)
+	err = json.Unmarshal(ctx.Request.Body(), &Payload)
 
 	if err != nil {
 		ctx.Error("", fasthttp.StatusNoContent)
@@ -145,7 +96,7 @@ func postNewImage(ctx *fasthttp.RequestCtx) {
 		ConvertRes: false,
 	})
 
-	for _, element := range resolutions {
+	for _, element := range config.Resolutions {
 		queueList = append(queueList, models.ConvertCommand{
 			Path:       imageFolderPath + "/",
 			WebP:       true,
@@ -196,20 +147,12 @@ func convertImage(imagePath string, command []models.ConvertCommand) {
 }
 
 func main() {
-	err := godotenv.Load(".env")
-
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
 	log.Print("Loading config..")
-
-	err = loadConfig()
+	biz.InitConfiguration()
+	config, err := biz.GetConfig()
 	if err != nil {
-		log.Print("*ERROR* Failed to load config " + err.Error())
-		return
+		log.Fatal(err)
 	}
-	loadResolutions()
-
 	log.Print("Configuration loaded.")
 
 	adminRequestHandler := func(ctx *fasthttp.RequestCtx) {
