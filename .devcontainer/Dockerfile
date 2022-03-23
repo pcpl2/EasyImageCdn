@@ -1,6 +1,7 @@
 FROM golang:alpine3.14
 
 RUN apk add --update --no-cache --repository http://dl-3.alpinelinux.org/alpine/edge/community --repository http://dl-3.alpinelinux.org/alpine/edge/main vips-dev git zsh build-base openssh
+RUN go env -w GO111MODULE=off
 RUN go get -u golang.org/x/tools/gopls 2>&1
 RUN go get -u honnef.co/go/tools/... 2>&1
 RUN go get -u golang.org/x/lint/golint 2>&1
@@ -15,3 +16,5 @@ RUN sh -c "$(wget -O- https://github.com/deluan/zsh-in-docker/releases/download/
     -p extract \
     -p colorize \
     -p golang
+
+RUN go env -w GO111MODULE=auto
