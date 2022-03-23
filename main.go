@@ -5,13 +5,15 @@ import (
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/compress"
+	"github.com/gofiber/fiber/v2/middleware/etag"
 	"github.com/gofiber/fiber/v2/middleware/logger"
-	"github.com/valyala/fasthttp"
 
 	biz "imageConverter.pcpl2lab.ovh/biz"
 
 	aApi "imageConverter.pcpl2lab.ovh/controllers/adminApis"
 	pApi "imageConverter.pcpl2lab.ovh/controllers/publicApis"
+	utils "imageConverter.pcpl2lab.ovh/controllers/utils"
 )
 
 func main() {
@@ -28,17 +30,18 @@ func main() {
 
 	log.Print("Configuration loaded.")
 
-	app := fiber.New(fiber.Config{
-		ETag:         true,
+	logger := logger.New(logger.Config{
+		Format: "[${ip}]:${port} ${status} - ${method} ${path}\n",
+	})
+
+	adminApp := fiber.New(fiber.Config{
 		BodyLimit:    config.MaxFileSize * 1024 * 1024,
 		ServerHeader: "",
 	})
 
-	app.Use(logger.New(logger.Config{
-		Format: "[${ip}]:${port} ${status} - ${method} ${path}\n",
-	}))
+	adminApp.Use(logger)
 
-	app.Post("/v1/newImage", func(c *fiber.Ctx) error {
+	adminApp.Post("/v1/newImage", func(c *fiber.Ctx) error {
 		aApi.PostNewImage(c)
 		return nil
 	})
@@ -46,40 +49,37 @@ func main() {
 	if len(config.AdminHTTPAddr) > 0 {
 		log.Printf("Starting HTTP server on %q", config.AdminHTTPAddr)
 		go func() {
-			if err := app.Listen(config.AdminHTTPAddr); err != nil {
+			if err := adminApp.Listen(config.AdminHTTPAddr); err != nil {
 				log.Fatalf("error in ListenAndServe: %s", err)
 			}
 		}()
 	}
 
-	publicRequestHandler := func(ctx *fasthttp.RequestCtx) {
-		spath := strings.Split(string(ctx.Path()), "/")
-		if len(spath) < 3 {
-			ctx.Error("", fasthttp.StatusNotFound)
-			return
+	publicApp := fiber.New(fiber.Config{
+		ServerHeader: "",
+	})
+
+	publicApp.Use(logger)
+	publicApp.Use(etag.New())
+	publicApp.Use(compress.New(compress.Config{
+		Level: compress.LevelBestCompression, // 1
+	}))
+
+	publicApp.Get("/*", func(c *fiber.Ctx) error {
+		spath := utils.DeleteEmpty(strings.Split(string(c.Path()), "/"))
+		if len(spath) < 2 {
+			c.SendStatus(fiber.StatusNotFound)
+			return nil
 		}
 
-		if spath[1] == "" {
-			ctx.Error("", fasthttp.StatusNotFound)
-			return
-		}
-
-		if spath[2] == "" {
-			ctx.Error("", fasthttp.StatusNotFound)
-			return
-		}
-		pApi.GetImage(ctx, spath[1], spath[2])
-	}
-
-	publicServer := &fasthttp.Server{
-		Handler:               publicRequestHandler,
-		NoDefaultServerHeader: true,
-	}
+		pApi.GetImage(c, spath[0], spath[1])
+		return nil
+	})
 
 	if len(config.PublicHttpAddr) > 0 {
 		log.Printf("Starting HTTP server on %q", config.PublicHttpAddr)
 		go func() {
-			if err := publicServer.ListenAndServe(config.PublicHttpAddr); err != nil {
+			if err := publicApp.Listen(config.PublicHttpAddr); err != nil {
 				log.Fatalf("error in ListenAndServe: %s", err)
 			}
 		}()

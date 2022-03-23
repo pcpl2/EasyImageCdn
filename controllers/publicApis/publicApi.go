@@ -1,23 +1,24 @@
 package publicapis
 
 import (
+	"errors"
 	"fmt"
 	"log"
+	"os"
 	"strings"
 
-	"github.com/valyala/fasthttp"
-	httpUtils "imageConverter.pcpl2lab.ovh/controllers/utils"
+	"github.com/gofiber/fiber/v2"
 
 	biz "imageConverter.pcpl2lab.ovh/biz"
 )
 
-func GetImage(ctx *fasthttp.RequestCtx, id string, fileName string) {
+func GetImage(ctx *fiber.Ctx, id string, fileName string) {
 	config, err := biz.GetConfig()
 	if err != nil {
-		ctx.Error("", fasthttp.StatusInternalServerError)
+		ctx.SendStatus(fiber.StatusInternalServerError)
 		log.Fatal(err)
 	}
-	acceptHeader := string(ctx.Request.Header.Peek("Accept"))
+	acceptHeader := string(ctx.Get("Accept"))
 
 	fileNameWithEx := fileName
 
@@ -25,6 +26,12 @@ func GetImage(ctx *fasthttp.RequestCtx, id string, fileName string) {
 		log.Printf("Send webp file.")
 		fileNameWithEx = fmt.Sprintf("%s.webp", fileName)
 	}
+	filePath := fmt.Sprintf("%s/%s/%s", config.FilesPath, id, fileNameWithEx)
+	if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
+		ctx.SendStatus(fiber.StatusInternalServerError)
+		return
+	}
+	ctx.SendFile(filePath, true)
 
-	httpUtils.SendFileHTTP(ctx, config, id, fileNameWithEx)
+	//	httpUtils.SendFileHTTP(ctx, config, id, fileNameWithEx)
 }
