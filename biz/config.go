@@ -21,6 +21,7 @@ func InitConfiguration() {
 	}
 
 	maxFilesize, _ := strconv.Atoi(os.Getenv("MAX_FILE_SIZE"))
+	cacheTime, _ := strconv.Atoi(os.Getenv("CACHE_TIME"))
 
 	//TODO validate all configuration
 	//TODO Default configuration if enviroment is empty
@@ -35,6 +36,7 @@ func InitConfiguration() {
 		APIKeyHeader:   os.Getenv("API_KEY_HEADER"),
 		FilesPath:      os.Getenv("FILES_PATH"),
 		MaxFileSize:    maxFilesize,
+		CacheTime:      cacheTime,
 	}
 
 	loadResolutions()

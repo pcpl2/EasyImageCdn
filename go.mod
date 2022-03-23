@@ -6,7 +6,7 @@ require (
 	github.com/gofiber/fiber/v2 v2.30.0
 	github.com/h2non/bimg v1.1.7
 	github.com/joho/godotenv v1.4.0
-	github.com/valyala/fasthttp v1.34.0
+	github.com/valyala/fasthttp v1.34.0 // indirect
 )
 
 require (

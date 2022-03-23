@@ -3,8 +3,10 @@ package main
 import (
 	"log"
 	"strings"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cache"
 	"github.com/gofiber/fiber/v2/middleware/compress"
 	"github.com/gofiber/fiber/v2/middleware/etag"
 	"github.com/gofiber/fiber/v2/middleware/logger"
@@ -31,12 +33,13 @@ func main() {
 	log.Print("Configuration loaded.")
 
 	logger := logger.New(logger.Config{
-		Format: "[${ip}]:${port} ${status} - ${method} ${path}\n",
+		Format: "[${ip}]:${port} ${status} - ${latency} - ${method} ${path}\n",
 	})
 
 	adminApp := fiber.New(fiber.Config{
-		BodyLimit:    config.MaxFileSize * 1024 * 1024,
-		ServerHeader: "",
+		BodyLimit:             config.MaxFileSize * 1024 * 1024,
+		DisableStartupMessage: true,
+		ServerHeader:          "",
 	})
 
 	adminApp.Use(logger)
@@ -56,13 +59,22 @@ func main() {
 	}
 
 	publicApp := fiber.New(fiber.Config{
-		ServerHeader: "",
+		ServerHeader:          "",
+		DisableStartupMessage: true,
 	})
 
 	publicApp.Use(logger)
 	publicApp.Use(etag.New())
 	publicApp.Use(compress.New(compress.Config{
-		Level: compress.LevelBestCompression, // 1
+		Level: compress.LevelBestCompression,
+	}))
+
+	publicApp.Use(cache.New(cache.Config{
+		Next: func(c *fiber.Ctx) bool {
+			return c.Query("refresh") == "true"
+		},
+		Expiration:   time.Duration(config.CacheTime) * time.Minute,
+		CacheControl: true,
 	}))
 
 	publicApp.Get("/*", func(c *fiber.Ctx) error {

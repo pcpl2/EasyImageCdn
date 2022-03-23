@@ -7,6 +7,7 @@ type ApiConfig struct {
 	APIKeyHeader   string
 	FilesPath      string
 	MaxFileSize    int
+	CacheTime      int
 	Resolutions    []ResElement
 }
 
