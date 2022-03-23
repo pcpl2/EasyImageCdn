@@ -2,18 +2,15 @@ package adminapis
 
 import (
 	"encoding/base64"
-	"encoding/json"
 	"fmt"
 	"strconv"
 
 	"log"
 	"net/url"
 	"os"
-	"strings"
 
+	"github.com/gofiber/fiber/v2"
 	"github.com/h2non/bimg"
-
-	"github.com/valyala/fasthttp"
 
 	httpUtils "imageConverter.pcpl2lab.ovh/controllers/utils"
 
@@ -21,44 +18,40 @@ import (
 	models "imageConverter.pcpl2lab.ovh/models"
 )
 
-func PostNewImage(ctx *fasthttp.RequestCtx) {
+func PostNewImage(ctx *fiber.Ctx) {
 	config, err := biz.GetConfig()
 	if err != nil {
-		ctx.Error("", fasthttp.StatusInternalServerError)
+		ctx.SendStatus(fiber.StatusUnauthorized)
 		log.Fatal(err)
 	}
 
-	if !ctx.IsPost() {
-		ctx.Error("", fasthttp.StatusNoContent)
-		log.Print("*ERROR* invalid method")
-		return
-	} else if !strings.Contains(string(ctx.Request.Header.ContentType()), "application/json") {
-		ctx.Error("", fasthttp.StatusNoContent)
+	if !ctx.Is("json") {
+		ctx.SendStatus(fiber.StatusBadRequest)
 		log.Print("*ERROR* invalid content type")
 		return
 	}
 
 	if !httpUtils.ValidateAuth(ctx, config) {
-		ctx.Error("", fasthttp.StatusNoContent)
+		ctx.SendStatus(fiber.StatusUnauthorized)
 		log.Print("*ERROR* Auth error")
 		return
 	}
 
 	var Payload models.ImagePayload
-	err = json.Unmarshal(ctx.Request.Body(), &Payload)
 
-	if err != nil {
-		ctx.Error("", fasthttp.StatusNoContent)
-		log.Print("*ERROR* Failed to parse payload " + err.Error())
+	if err := ctx.BodyParser(&Payload); err != nil {
+		log.Print("*ERROR* " + err.Error())
+		ctx.SendStatus(fiber.StatusBadRequest)
 		return
 	}
+	log.Print("Hello")
 
 	imageFolderPath := config.FilesPath + "/" + url.PathEscape(Payload.ID)
 
 	if _, err := os.Stat(imageFolderPath); os.IsNotExist(err) {
 		errMkDir := os.Mkdir(imageFolderPath, 0755)
 		if errMkDir != nil {
-			ctx.Error("", fasthttp.StatusNoContent)
+			ctx.SendStatus(fiber.StatusNoContent)
 			log.Print("*ERROR* Failed to create folder " + errMkDir.Error())
 			return
 		}
@@ -74,7 +67,7 @@ func PostNewImage(ctx *fasthttp.RequestCtx) {
 
 	f, err := os.OpenFile(sourcePath, os.O_WRONLY|os.O_CREATE, 0777)
 	if err != nil {
-		ctx.Error("", fasthttp.StatusNoContent)
+		ctx.SendStatus(fiber.StatusNoContent)
 		log.Print("*ERROR* Cannot open file " + err.Error())
 		return
 	}

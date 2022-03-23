@@ -4,6 +4,8 @@ import (
 	"log"
 	"strings"
 
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/valyala/fasthttp"
 
 	biz "imageConverter.pcpl2lab.ovh/biz"
@@ -26,23 +28,25 @@ func main() {
 
 	log.Print("Configuration loaded.")
 
-	adminRequestHandler := func(ctx *fasthttp.RequestCtx) {
-		switch string(ctx.Path()) {
-		case "/v1/newImage":
-			aApi.PostNewImage(ctx)
-		}
-	}
+	app := fiber.New(fiber.Config{
+		ETag:         true,
+		BodyLimit:    config.MaxFileSize * 1024 * 1024,
+		ServerHeader: "",
+	})
 
-	adminServer := &fasthttp.Server{
-		Handler:               adminRequestHandler,
-		NoDefaultServerHeader: true,
-		MaxRequestBodySize:    config.MaxFileSize * 1024 * 1024,
-	}
+	app.Use(logger.New(logger.Config{
+		Format: "[${ip}]:${port} ${status} - ${method} ${path}\n",
+	}))
+
+	app.Post("/v1/newImage", func(c *fiber.Ctx) error {
+		aApi.PostNewImage(c)
+		return nil
+	})
 
 	if len(config.AdminHTTPAddr) > 0 {
 		log.Printf("Starting HTTP server on %q", config.AdminHTTPAddr)
 		go func() {
-			if err := adminServer.ListenAndServe(config.AdminHTTPAddr); err != nil {
+			if err := app.Listen(config.AdminHTTPAddr); err != nil {
 				log.Fatalf("error in ListenAndServe: %s", err)
 			}
 		}()
