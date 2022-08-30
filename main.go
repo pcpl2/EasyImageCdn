@@ -49,14 +49,12 @@ func main() {
 		return nil
 	})
 
-	if len(config.AdminHTTPAddr) > 0 {
-		log.Printf("Starting HTTP server on %q", config.AdminHTTPAddr)
-		go func() {
-			if err := adminApp.Listen(config.AdminHTTPAddr); err != nil {
-				log.Fatalf("error in ListenAndServe: %s", err)
-			}
-		}()
-	}
+	log.Printf("Starting HTTP server on 0.0.0.0:9324")
+	go func() {
+		if err := adminApp.Listen("0.0.0.0:9324"); err != nil {
+			log.Fatalf("error in adminApp.Listen: %s", err)
+		}
+	}()
 
 	publicApp := fiber.New(fiber.Config{
 		ServerHeader:          "",
@@ -88,14 +86,12 @@ func main() {
 		return nil
 	})
 
-	if len(config.PublicHttpAddr) > 0 {
-		log.Printf("Starting HTTP server on %q", config.PublicHttpAddr)
-		go func() {
-			if err := publicApp.Listen(config.PublicHttpAddr); err != nil {
-				log.Fatalf("error in ListenAndServe: %s", err)
-			}
-		}()
-	}
+	log.Printf("Starting HTTP server on 0.0.0.0:9555")
+	go func() {
+		if err := publicApp.Listen("0.0.0.0:9555"); err != nil {
+			log.Fatalf("error in publicApp.Listen: %s", err)
+		}
+	}()
 
 	select {}
 }

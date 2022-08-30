@@ -75,8 +75,6 @@ RUN mkdir /images
 RUN chown -R 10003:10002 /images
 
 ENV IN_DOCKER=1 \
-    ADMIN_HTTP_ADDR="0.0.0.0:9324" \
-    PUBLIC_HTTP_ADDR="0.0.0.0:9555" \
     API_KEY="00000000-0000-0000-0000-000000000000" \
     API_KEY_HEADER="key" \
     FILES_PATH="/images" \

@@ -26,19 +26,13 @@ func InitConfiguration() {
 	cacheTime, _ := strconv.Atoi(os.Getenv("CACHE_TIME"))
 
 	//TODO validate all configuration
-	//TODO Default configuration if enviroment is empty
-	//if os.Getenv("PUBLIC_HTTP_ADDR") == "" {
-	//	log.Print("Not declared public http addr")
-	//}
 
 	config = models.ApiConfig{
-		AdminHTTPAddr:  os.Getenv("ADMIN_HTTP_ADDR"),
-		PublicHttpAddr: os.Getenv("PUBLIC_HTTP_ADDR"),
-		APIKey:         os.Getenv("API_KEY"),
-		APIKeyHeader:   os.Getenv("API_KEY_HEADER"),
-		FilesPath:      os.Getenv("FILES_PATH"),
-		MaxFileSize:    maxFilesize,
-		CacheTime:      cacheTime,
+		APIKey:       os.Getenv("API_KEY"),
+		APIKeyHeader: os.Getenv("API_KEY_HEADER"),
+		FilesPath:    os.Getenv("FILES_PATH"),
+		MaxFileSize:  maxFilesize,
+		CacheTime:    cacheTime,
 	}
 
 	loadResolutions()

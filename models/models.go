@@ -1,14 +1,12 @@
 package models
 
 type ApiConfig struct {
-	AdminHTTPAddr  string
-	PublicHttpAddr string
-	APIKey         string
-	APIKeyHeader   string
-	FilesPath      string
-	MaxFileSize    int
-	CacheTime      int
-	Resolutions    []ResElement
+	APIKey       string
+	APIKeyHeader string
+	FilesPath    string
+	MaxFileSize  int
+	CacheTime    int
+	Resolutions  []ResElement
 }
 
 type ResElement struct {
