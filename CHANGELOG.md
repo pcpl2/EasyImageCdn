@@ -2,6 +2,7 @@
 * Added fiber
 * Added Etag generate for public endpints
 * Added setting Cache-Control
+* Added generate docker image for arm64
 * Updated go version to 1.18
 * Removed error with missing .env file in docker container
 * Removed unused addr configuration
