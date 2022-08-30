@@ -1,4 +1,4 @@
-FROM alpine:3.15 as libvipsBuilder
+FROM alpine:3.16 as libvipsBuilder
 
 # Environment Variables
 ARG LIBVIPS_VERSION_MAJOR_MINOR=8.12
@@ -45,7 +45,7 @@ RUN echo 'Install libvips' && \
     rm -rf /var/cache/apk/*
 
 
-FROM golang:1.18.5-alpine3.15 AS builder
+FROM golang:1.18.5-alpine3.16 AS builder
 
 WORKDIR /build
 
@@ -67,7 +67,7 @@ FROM busybox AS builder-user
 RUN addgroup -g 10002 appUser && \
     adduser -D -u 10003 -G appUser appUser
 
-FROM alpine:3.15
+FROM alpine:3.16
 RUN apk add --no-cache libwebp glib expat fftw-double-libs orc lcms2 librsvg cairo libexif
 COPY --from=builder /build/imageCdn /
 COPY --from=builder-user /etc/passwd /etc/passwd
