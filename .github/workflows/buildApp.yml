@@ -10,11 +10,12 @@ on:
     branches: [ main ]
 
 jobs:
-  build:
+  build_non_docker:
+    name: Build non docker version
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3.0.2
 
     - name: Set up Go
       uses: actions/setup-go@v2
@@ -36,7 +37,26 @@ jobs:
           libvips-dev 
 
     - name: Prepare go modules
-      run: go env -w GO111MODULE=auto CGO_ENABLED=1 GOOS=linux GOARCH=amd64 && go get -d -v
+      run: go env -w GO111MODULE=auto CGO_ENABLED=1 GOOS=linux && go get -d -v
 
     - name: Start build script
       run: go build -v ./...
+  
+  build_docker:
+    name: Build docker version
+    runs-on: ubuntu-latest
+        
+    steps:
+      - uses: actions/checkout@v3.0.2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2.0.0
+
+      - name: buildDocker
+        uses: docker/build-push-action@v3.1.0
+        with:
+          context: .
+          push: false
+          platforms: linux/amd64, linux/arm64
+          tags:  pcpl2/easy_image_cdn:latest,ghcr.io/pcpl2/easy_image_cdn:latest
+

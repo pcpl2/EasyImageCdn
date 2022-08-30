@@ -55,7 +55,7 @@ RUN apk update && \
     apk add git build-base && \
     apk add --update --no-cache --repository http://dl-3.alpinelinux.org/alpine/edge/community --repository http://dl-3.alpinelinux.org/alpine/edge/main vips-dev
 
-RUN go env -w CGO_ENABLED=1 GOOS=linux GOARCH=amd64
+RUN go env -w CGO_ENABLED=1 GOOS=linux
 RUN go get -d -v
 RUN go build -ldflags="-w -s" -o imageCdn .
 
