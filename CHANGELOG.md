@@ -9,6 +9,8 @@
 * Removed unused addr configuration
 * Removed unused files path configuration
 * Removed bimg library
+* Public api is not require adding source name for getting default image 
+
 # 0.1.2
 
 * Implemented detect image format by accept in browser.

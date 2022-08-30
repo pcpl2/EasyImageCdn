@@ -34,9 +34,9 @@ Payload:
 
 #### Public
 
-`http://localhost:9555/{Your image id}/source` -> Has return source image (if you have `image/webp` in accept header server will return the image in webp format).
+`http://localhost:9555/{Your image id}` -> Has return source image (if you have `image/webp` in accept header server will return the image in webp format).
 
-For get image in coverted resolution you must replace `source` to resolution value. Example:
+For get image in coverted resolution you add resolution value after image id. Example:
 `http://localhost:9555/{Your image id}/1024x720`
 
 ## Configuration

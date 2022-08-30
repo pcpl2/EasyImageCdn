@@ -77,12 +77,15 @@ func main() {
 
 	publicApp.Get("/*", func(c *fiber.Ctx) error {
 		spath := utils.DeleteEmpty(strings.Split(string(c.Path()), "/"))
-		if len(spath) < 2 {
+		fileName := "source"
+		if len(spath) < 1 {
 			c.SendStatus(fiber.StatusNotFound)
 			return nil
+		} else if len(spath) == 2 {
+			fileName = spath[1]
 		}
 
-		pApi.GetImage(c, spath[0], spath[1])
+		pApi.GetImage(c, spath[0], fileName)
 		return nil
 	})
 
