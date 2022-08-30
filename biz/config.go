@@ -30,7 +30,7 @@ func InitConfiguration() {
 	config = models.ApiConfig{
 		APIKey:       os.Getenv("API_KEY"),
 		APIKeyHeader: os.Getenv("API_KEY_HEADER"),
-		FilesPath:    os.Getenv("FILES_PATH"),
+		FilesPath:    "/var/lib/images",
 		MaxFileSize:  maxFilesize,
 		CacheTime:    cacheTime,
 	}

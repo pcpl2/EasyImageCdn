@@ -59,6 +59,9 @@ RUN go env -w CGO_ENABLED=1 GOOS=linux GOARCH=amd64
 RUN go get -d -v
 RUN go build -ldflags="-w -s" -o imageCdn .
 
+RUN mkdir -p images
+RUN touch images/dontRemoveMe.txt
+
 FROM busybox AS builder-user
 
 RUN addgroup -g 10002 appUser && \
@@ -68,16 +71,13 @@ FROM alpine:3.15
 RUN apk add --no-cache libwebp glib expat fftw-double-libs orc lcms2 librsvg cairo libexif
 COPY --from=builder /build/imageCdn /
 COPY --from=builder-user /etc/passwd /etc/passwd
+COPY --from=builder --chown=10003:10002 /build/images /var/lib/images/
 COPY --from=libvipsBuilder /usr/libvips /usr/
 COPY --from=libvipsBuilder /usr/lib/libjpeg.so.62 /usr/lib/libjpeg.so.62
-
-RUN mkdir /images
-RUN chown -R 10003:10002 /images
 
 ENV IN_DOCKER=1 \
     API_KEY="00000000-0000-0000-0000-000000000000" \
     API_KEY_HEADER="key" \
-    FILES_PATH="/images" \
     CONVERT_TO_RES="1024x720,800x600" \
     MAX_FILE_SIZE=10 \
     CACHE_TIME=30
