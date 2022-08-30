@@ -45,7 +45,7 @@ RUN echo 'Install libvips' && \
     rm -rf /var/cache/apk/*
 
 
-FROM golang:1.17-alpine3.15 AS builder
+FROM golang:1.18.5-alpine3.15 AS builder
 
 WORKDIR /build
 
@@ -80,7 +80,7 @@ ENV ADMIN_HTTP_ADDR="0.0.0.0:9324" \
     API_KEY_HEADER="key" \
     FILES_PATH="/images" \
     CONVERT_TO_RES="1024x720,800x600" \
-    MAX_FILE_SIZE=10
+    MAX_FILE_SIZE=10 \
     CACHE_TIME=30
 
 EXPOSE 9324
