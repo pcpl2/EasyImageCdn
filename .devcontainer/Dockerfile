@@ -1,6 +1,6 @@
-FROM golang:alpine3.14
+FROM golang:alpine3.16
 
-RUN apk add --update --no-cache --repository http://dl-3.alpinelinux.org/alpine/edge/community --repository http://dl-3.alpinelinux.org/alpine/edge/main vips-dev git zsh build-base openssh
+RUN apk add --update --no-cache git zsh build-base openssh
 RUN go env -w GO111MODULE=off
 RUN go get -u golang.org/x/tools/gopls 2>&1
 RUN go get -u honnef.co/go/tools/... 2>&1

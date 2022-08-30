@@ -28,19 +28,14 @@ jobs:
       run: 
         sudo apt-get update -qq -o Acquire::Retries=3
 
-    - name: Install libvips
-      env:
-        DEBIAN_FRONTEND: noninteractive
-      run:
-        # we only need the library
-        sudo apt-get install --fix-missing -qq -o Acquire::Retries=3
-          libvips-dev 
-
     - name: Prepare go modules
       run: go env -w GO111MODULE=auto CGO_ENABLED=1 GOOS=linux && go get -d -v
 
     - name: Start build script
       run: go build -v ./...
+
+    - name: Run image converter test
+      run: go test -v ./imageConverter
   
   build_docker:
     name: Build docker version
