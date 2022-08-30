@@ -1,7 +1,4 @@
-# This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
-# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
-
-name: Build cdn server on commit
+name: Build
 
 on:
   push:
@@ -43,6 +40,14 @@ jobs:
         
     steps:
       - uses: actions/checkout@v3.0.2
+
+      - name: Set up QEMU
+        id: qemu
+        uses: docker/setup-qemu-action@v1
+        with:
+          image: tonistiigi/binfmt:latest
+          platforms: all
+
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2.0.0

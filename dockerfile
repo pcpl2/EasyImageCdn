@@ -1,15 +1,14 @@
-FROM golang:1.18.5-alpine3.16 AS builder
+FROM golang:1.18.5-bullseye AS builder
+
+RUN apt update && apt -y install musl musl-dev musl-tools
 
 WORKDIR /build
 
 COPY . .
 
-RUN apk update && \
-    apk add git build-base
-
-RUN go env -w CGO_ENABLED=1 GOOS=linux
+RUN go env -w CGO_ENABLED=1 GOOS=linux CC=/usr/bin/musl-gcc
 RUN go get -d -v
-RUN go build -v -ldflags="-w -s" -o imageCdn .
+RUN go build -v -ldflags="-linkmode external -extldflags=-static -w -s" -o imageCdn .
 RUN go test -v ./imageConverter
 
 RUN mkdir -p images
@@ -20,8 +19,8 @@ FROM busybox AS builder-user
 RUN addgroup -g 10002 appUser && \
     adduser -D -u 10003 -G appUser appUser
 
-FROM alpine:3.16
-COPY --from=builder /build/imageCdn /
+FROM gcr.io/distroless/static-debian11
+COPY --from=builder --chown=10003:10002 /build/imageCdn /
 COPY --from=builder-user /etc/passwd /etc/passwd
 COPY --from=builder --chown=10003:10002 /build/images /var/lib/images/
 

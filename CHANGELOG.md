@@ -1,4 +1,5 @@
 # 0.2
+
 * Added fiber
 * Added Etag generate for public endpints
 * Added setting Cache-Control
@@ -9,7 +10,8 @@
 * Removed unused addr configuration
 * Removed unused files path configuration
 * Removed bimg library
-* Public api is not require adding source name for getting default image 
+* Public api is not require adding source name for getting default image
+* Moved docker image from alpine to distro-less
 
 # 0.1.2
 
