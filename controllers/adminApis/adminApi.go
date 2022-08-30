@@ -2,19 +2,17 @@ package adminapis
 
 import (
 	"encoding/base64"
-	"fmt"
-	"strconv"
 
 	"log"
 	"net/url"
 	"os"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/h2non/bimg"
 
 	httpUtils "imageConverter.pcpl2lab.ovh/controllers/utils"
 
 	biz "imageConverter.pcpl2lab.ovh/biz"
+	ic "imageConverter.pcpl2lab.ovh/imageConverter"
 	models "imageConverter.pcpl2lab.ovh/models"
 )
 
@@ -44,44 +42,70 @@ func PostNewImage(ctx *fiber.Ctx) {
 		ctx.SendStatus(fiber.StatusBadRequest)
 		return
 	}
-	log.Print("Hello")
 
 	imageFolderPath := config.FilesPath + "/" + url.PathEscape(Payload.ID)
 
-	if _, err := os.Stat(imageFolderPath); os.IsNotExist(err) {
-		errMkDir := os.Mkdir(imageFolderPath, 0755)
-		if errMkDir != nil {
-			ctx.SendStatus(fiber.StatusNoContent)
-			log.Print("*ERROR* Failed to create folder " + errMkDir.Error())
-			return
-		}
+	if err := createFileFolder(config, imageFolderPath, ctx); err != nil {
+		return
 	}
 
 	dec, err := base64.StdEncoding.DecodeString(Payload.Image)
 	if err != nil {
-		panic(err)
+		ctx.SendStatus(fiber.StatusNoContent)
+		log.Print("*ERROR* Cannot read file from payload " + err.Error())
+		return
 	}
 
 	sourceFilename := "source"
 	sourcePath := imageFolderPath + "/" + sourceFilename
 
+	if err := saveFile(config, sourcePath, dec, ctx); err != nil {
+		return
+	}
+
+	queueList := createConvertCommands(config, imageFolderPath)
+
+	ic.ConvertImage(sourcePath, queueList)
+}
+
+func createFileFolder(config models.ApiConfig, imageFolderPath string, ctx *fiber.Ctx) error {
+	if _, err := os.Stat(imageFolderPath); os.IsNotExist(err) {
+		errMkDir := os.Mkdir(imageFolderPath, 0755)
+		if errMkDir != nil {
+			ctx.SendStatus(fiber.StatusNoContent)
+			log.Print("*ERROR* Failed to create folder " + errMkDir.Error())
+			return errMkDir
+		}
+	}
+	return nil
+}
+
+func saveFile(config models.ApiConfig, sourcePath string, file []byte, ctx *fiber.Ctx) error {
 	f, err := os.OpenFile(sourcePath, os.O_WRONLY|os.O_CREATE, 0777)
 	if err != nil {
 		ctx.SendStatus(fiber.StatusNoContent)
 		log.Print("*ERROR* Cannot open file " + err.Error())
-		return
+		return err
 	}
 	defer f.Close()
 
-	if _, err := f.Write(dec); err != nil {
-		panic(err)
+	if _, err := f.Write(file); err != nil {
+		ctx.SendStatus(fiber.StatusNoContent)
+		log.Print("*ERROR* Cannot write file " + err.Error())
+		return err
 	}
+
 	if err := f.Sync(); err != nil {
-		panic(err)
+		ctx.SendStatus(fiber.StatusNoContent)
+		log.Print("*ERROR* Cannot sync file " + err.Error())
+		return err
 	}
 
-	queueList := []models.ConvertCommand{}
+	return nil
+}
 
+func createConvertCommands(config models.ApiConfig, imageFolderPath string) []models.ConvertCommand {
+	queueList := []models.ConvertCommand{}
 	queueList = append(queueList, models.ConvertCommand{
 		Path:       imageFolderPath + "/",
 		WebP:       true,
@@ -103,37 +127,5 @@ func PostNewImage(ctx *fiber.Ctx) {
 			TargetRes:  element,
 		})
 	}
-
-	convertImage(sourcePath, queueList)
-}
-
-func convertImage(imagePath string, command []models.ConvertCommand) {
-	buffer, err := bimg.Read(imagePath)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-	}
-
-	for _, element := range command {
-		imagePrt := bimg.NewImage(buffer)
-		imageName := "source"
-		imageExtension := ""
-
-		if element.ConvertRes {
-			_, err := imagePrt.ForceResize(element.TargetRes.Width, element.TargetRes.Height)
-			if err != nil {
-				fmt.Fprintln(os.Stderr, err)
-			}
-			imageName = strconv.Itoa(element.TargetRes.Width) + "x" + strconv.Itoa(element.TargetRes.Height)
-		}
-
-		if element.WebP {
-			_, err := imagePrt.Convert(bimg.WEBP)
-			if err != nil {
-				fmt.Fprintln(os.Stderr, err)
-			}
-			imageExtension = ".webp"
-		}
-
-		bimg.Write(element.Path+imageName+imageExtension, imagePrt.Image())
-	}
+	return queueList
 }
