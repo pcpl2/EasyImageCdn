@@ -15,9 +15,11 @@ var config models.ApiConfig
 var loaded = false
 
 func InitConfiguration() {
-	err := godotenv.Load(".env")
-	if err != nil {
-		log.Println("Error with loading .env file: " + err.Error())
+	if os.Getenv("IN_DOCKER") != "1" {
+		err := godotenv.Load(".env")
+		if err != nil {
+			log.Println("Error with loading .env file: " + err.Error())
+		}
 	}
 
 	maxFilesize, _ := strconv.Atoi(os.Getenv("MAX_FILE_SIZE"))

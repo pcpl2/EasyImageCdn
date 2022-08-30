@@ -2,6 +2,8 @@
 * Added fiber
 * Added Etag generate for public endpints
 * Added setting Cache-Control
+* Updated go version to 1.18
+* Removed error with missing .env file in docker container.
 # 0.1.2
 
 * Implemented detect image format by accept in browser.
