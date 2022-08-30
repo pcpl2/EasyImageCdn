@@ -2,6 +2,7 @@ package adminapis
 
 import (
 	"encoding/base64"
+	"io"
 
 	"log"
 	"net/url"
@@ -46,6 +47,8 @@ func PostNewImage(ctx *fiber.Ctx) {
 	imageFolderPath := config.FilesPath + "/" + url.PathEscape(Payload.ID)
 
 	if err := createFileFolder(config, imageFolderPath, ctx); err != nil {
+		log.Print("*ERROR* " + err.Error())
+		ctx.SendStatus(fiber.StatusBadRequest)
 		return
 	}
 
@@ -60,6 +63,66 @@ func PostNewImage(ctx *fiber.Ctx) {
 	sourcePath := imageFolderPath + "/" + sourceFilename
 
 	if err := saveFile(config, sourcePath, dec, ctx); err != nil {
+		return
+	}
+
+	queueList := createConvertCommands(config, imageFolderPath)
+
+	ic.ConvertImage(sourcePath, queueList)
+}
+
+func PostNewImageMP(ctx *fiber.Ctx) {
+	config, err := biz.GetConfig()
+	if err != nil {
+		ctx.SendStatus(fiber.StatusUnauthorized)
+		log.Fatal(err)
+	}
+
+	if !httpUtils.ValidateAuth(ctx, config) {
+		ctx.SendStatus(fiber.StatusUnauthorized)
+		log.Print("*ERROR* Auth error")
+		return
+	}
+
+	imageId := string(ctx.Query("imageId"))
+
+	if imageId == "" {
+		ctx.SendStatus(fiber.StatusBadRequest)
+		log.Print("*ERROR* Invalid image id")
+		return
+	}
+
+	imageFolderPath := config.FilesPath + "/" + url.PathEscape(imageId)
+
+	if err := createFileFolder(config, imageFolderPath, ctx); err != nil {
+		return
+	}
+
+	sourceFilename := "source"
+	sourcePath := imageFolderPath + "/" + sourceFilename
+
+	file, err := ctx.FormFile("imageFile")
+
+	if err != nil {
+		ctx.SendStatus(fiber.StatusBadRequest)
+		log.Print("Invalid content type")
+		return
+
+	}
+
+	hFile, err := file.Open()
+	if err != nil {
+		ctx.SendStatus(fiber.StatusBadRequest)
+		return
+	}
+
+	fbytes, err := io.ReadAll(hFile)
+	if err != nil {
+		ctx.SendStatus(fiber.StatusBadRequest)
+		return
+	}
+
+	if err := saveFile(config, sourcePath, fbytes, ctx); err != nil {
 		return
 	}
 

@@ -1,4 +1,5 @@
-# EasyImageCdn [![Build](https://github.com/pcpl2/EasyImageCdn/actions/workflows/buildApp.yml/badge.svg)](https://github.com/pcpl2/EasyImageCdn/actions/workflows/buildApp.yml) ![Docker Image Size with architecture (latest by date/latest semver)](https://img.shields.io/docker/image-size/pcpl2/easy_image_cdn?arch=amd64&label=Docker%20image%20size%20on%20amd64&sort=date) ![Docker Pulls](https://img.shields.io/docker/pulls/pcpl2/easy_image_cdn) ![GitHub](https://img.shields.io/github/license/pcpl2/EasyImageCdn) ![Docker Image Version (latest semver)](https://img.shields.io/docker/v/pcpl2/easy_image_cdn?sort=date) ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/pcpl2/EasyImageCdn)
+# EasyImageCdn 
+[![Build](https://github.com/pcpl2/EasyImageCdn/actions/workflows/buildApp.yml/badge.svg)](https://github.com/pcpl2/EasyImageCdn/actions/workflows/buildApp.yml) ![Docker Image Size with architecture (latest by date/latest semver)](https://img.shields.io/docker/image-size/pcpl2/easy_image_cdn?arch=amd64&label=Docker%20image%20size%20on%20amd64&sort=date) ![Docker Pulls](https://img.shields.io/docker/pulls/pcpl2/easy_image_cdn) ![GitHub](https://img.shields.io/github/license/pcpl2/EasyImageCdn) ![Docker Image Version (latest semver)](https://img.shields.io/docker/v/pcpl2/easy_image_cdn?sort=date) ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/pcpl2/EasyImageCdn)
 
 Application to create a simple cdn server for images.
 
@@ -18,9 +19,27 @@ docker run --name imagecdn -v /my/images/location:/images -e API_KEY=EnterAdminK
 
 This command launches the application with image conversion to 1024x720 and 800x600 enabled, with a maximum file size of 10Mb and your api key.
 
+
+### Example docker-compose config
+```yml
+version: '3.8'
+  cdn:
+    image: pcpl2/easy_image_cdn:0.1.2
+    restart: always
+    environment:
+      API_KEY: 'EnterAdminKey'
+      CONVERT_TO_RES: '1024x720,800x600'
+      MAX_FILE_SIZE: 15
+    ports:
+      - '9324:9324'
+      - '9555:9555'
+    volumes:
+      - './images:/var/lib/images'
+```
+
 ### Endpoints
 
-#### Admin
+#### Admin:
 
 `http://localhost:9324/v1/newImage` -> For send and update Image
 Payload:
@@ -31,8 +50,9 @@ Payload:
     "image": {Your image in base64}
 }
 ```
+`http://localhost:9324/v1/newImageMp?imageId={Your image id}` -> For send and update Image as multipart and define image in multipart as `imageFile`
 
-#### Public
+#### Public:
 
 `http://localhost:9555/{Your image id}` -> Has return source image (if you have `image/webp` in accept header server will return the image in webp format).
 

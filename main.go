@@ -49,6 +49,11 @@ func main() {
 		return nil
 	})
 
+	adminApp.Post("/v1/newImageMp", func(c *fiber.Ctx) error {
+		aApi.PostNewImageMP(c)
+		return nil
+	})
+
 	log.Printf("Starting HTTP server on 0.0.0.0:9324")
 	go func() {
 		if err := adminApp.Listen("0.0.0.0:9324"); err != nil {

@@ -28,7 +28,7 @@ func GetImage(ctx *fiber.Ctx, id string, fileName string) {
 	}
 	filePath := fmt.Sprintf("%s/%s/%s", config.FilesPath, id, fileNameWithEx)
 	if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
-		ctx.SendStatus(fiber.StatusInternalServerError)
+		ctx.SendStatus(fiber.StatusNotFound)
 		return
 	}
 	ctx.SendFile(filePath, true)
