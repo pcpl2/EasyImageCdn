@@ -46,7 +46,6 @@ For get image in coverted resolution you add resolution value after image id. Ex
 ```env
 API_KEY=00000000-0000-0000-0000-000000000000
 API_KEY_HEADER=key
-FILES_PATH=/var/lib/images
 CONVERT_TO_RES=1024x720,800x600
 MAX_FILE_SIZE=10
 ```
@@ -57,7 +56,6 @@ MAX_FILE_SIZE=10
 | ----------- | --------- | ----------- |
 | API_KEY | 00000000-0000-0000-0000-000000000000 | Api key for upload images |
 | API_KEY_HEADER | key | Header name for api key in request. |
-| FILES_PATH | /var/lib/images | Path to the directory where the files will be saved . |
 | CONVERT_TO_RES | 1024x720,800x600 | List of resolutions to which images will be converted. |
 | MAX_FILE_SIZE | 10 | Maximum size of file sent to the application in megabytes. |
 | CACHE_TIME | 30 | Image cache lifetime set in minutes. |
