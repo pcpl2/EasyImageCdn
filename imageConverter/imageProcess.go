@@ -41,7 +41,7 @@ func saveFile(filePath string, fileName string, image image.Image, toWebp bool) 
 	path := filePath + fileName
 	b := new(bytes.Buffer)
 	if toWebp {
-		if err := webp.Encode(b, image, &webp.Options{Lossless: true}); err != nil {
+		if err := webp.Encode(b, image, &webp.Options{Quality: 80}); err != nil {
 			log.Println(err)
 		}
 		path = path + ".webp"
