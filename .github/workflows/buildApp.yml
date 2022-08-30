@@ -59,13 +59,3 @@ jobs:
           push: false
           platforms: linux/amd64, linux/arm64
           tags:  pcpl2/easy_image_cdn:latest,ghcr.io/pcpl2/easy_image_cdn:latest
-
-  finish:
-    needs: [build_non_docker, build_docker]
-    runs-on: ubuntu-latest
-    steps:
-    - name: Coveralls Finished
-      uses: coverallsapp/github-action@master
-      with:
-        github-token: ${{ secrets.github_token }}
-        parallel-finished: true
