@@ -1,6 +1,6 @@
 FROM golang:1.18.5-bullseye AS builder
 
-RUN apt update && apt -y install musl musl-dev musl-tools
+RUN apt-get update && apt-get -y install musl musl-dev musl-tools
 
 WORKDIR /build
 
@@ -14,7 +14,7 @@ RUN go test -v ./imageConverter
 RUN mkdir -p images
 RUN touch images/dontRemoveMe.txt
 
-FROM busybox AS builder-user
+FROM busybox:1.34.1 AS builder-user
 
 RUN addgroup -g 10002 appUser && \
     adduser -D -u 10003 -G appUser appUser
