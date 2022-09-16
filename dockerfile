@@ -1,6 +1,6 @@
 FROM golang:1.18.5-bullseye AS builder
 
-RUN apt-get update && apt-get -y install musl musl-dev musl-tools
+RUN apt-get update && apt-get --no-install-recommends -y install musl musl-dev musl-tools
 
 WORKDIR /build
 

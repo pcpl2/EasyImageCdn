@@ -22,7 +22,7 @@ jobs:
     - name: Update apt
       env:
           DEBIAN_FRONTEND: noninteractive
-      run: 
+      run:
         sudo apt-get update -qq -o Acquire::Retries=3
 
     - name: Prepare go modules
@@ -33,11 +33,11 @@ jobs:
 
     - name: Run image converter test
       run: go test -v ./imageConverter
-  
+
   build_docker:
     name: Build docker version
     runs-on: ubuntu-latest
-        
+
     steps:
       - uses: actions/checkout@v3.0.2
 
