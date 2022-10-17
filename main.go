@@ -32,7 +32,7 @@ func main() {
 
 	log.Print("Configuration loaded.")
 
-	logger := logger.New(logger.Config{
+	fiberLogger := logger.New(logger.Config{
 		Format: "[${ip}]:${port} ${status} - ${latency} - ${method} ${path}\n",
 	})
 
@@ -42,7 +42,7 @@ func main() {
 		ServerHeader:          "",
 	})
 
-	adminApp.Use(logger)
+	adminApp.Use(fiberLogger)
 
 	adminApp.Post("/v1/newImage", func(c *fiber.Ctx) error {
 		aApi.PostNewImage(c)
@@ -66,7 +66,7 @@ func main() {
 		DisableStartupMessage: true,
 	})
 
-	publicApp.Use(logger)
+	publicApp.Use(fiberLogger)
 	publicApp.Use(etag.New())
 	publicApp.Use(compress.New(compress.Config{
 		Level: compress.LevelBestCompression,
@@ -81,11 +81,10 @@ func main() {
 	}))
 
 	publicApp.Get("/*", func(c *fiber.Ctx) error {
-		spath := utils.DeleteEmpty(strings.Split(string(c.Path()), "/"))
+		spath := utils.DeleteEmpty(strings.Split(c.Path(), "/"))
 		fileName := "source"
 		if len(spath) < 1 {
-			c.SendStatus(fiber.StatusNotFound)
-			return nil
+			return c.SendStatus(fiber.StatusNotFound)
 		} else if len(spath) == 2 {
 			fileName = spath[1]
 		}
