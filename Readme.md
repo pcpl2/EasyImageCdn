@@ -80,14 +80,14 @@ MAX_FILE_SIZE=10
 | CONVERT_TO_RES | 1024x720,800x600 | List of resolutions to which images will be converted. |
 | MAX_FILE_SIZE | 10 | Maximum size of file sent to the application in megabytes. |
 | CACHE_TIME | 30 | Image cache lifetime set in minutes. |
-|
+
 
 ### Volumes configuration in container
 | Path | Description |
 | ----------- | ----------- |
 | `/var/lib/images` | Location for saving all images |
 | `/var/log/eic` | Location for Application log files |
-|
+
 
 ## Community
 * ❓ Ask questions on [GitHub Discussions](https://github.com/pcpl2/EasyImageCdn/discussions).
