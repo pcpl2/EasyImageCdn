@@ -17,7 +17,7 @@ OR
 docker run --name imagecdn -v /my/images/location:/var/lib/images -e API_KEY=EnterAdminKey -d pcpl2/easy_image_cdn:0.2.1
 ```
 
-This command launches the application with image conversion to 1024x720 and 800x600 enabled, with a maximum file size of 10Mb and your api key.
+This command launches the application with image conversion to 1024x720 and 800x600 enabled, with a maximum file size of 10Mb and your API key.
 
 
 ### Example docker-compose config
@@ -55,9 +55,9 @@ Payload:
 
 #### Public:
 
-`http://localhost:9555/{Your image id}` -> Has return source image (if you have `image/webp` in accept header server will return the image in webp format).
+`http://localhost:9555/{Your image id}` -> Has returned source image (if you have `image/webp` in accept header server will return the image in webp format).
 
-For get image in coverted resolution you add resolution value after image id. Example:
+To get the image in converted resolution, you add a resolution value after the image id. Example:
 `http://localhost:9555/{Your image id}/1024x720`
 
 ## Configuration
@@ -76,9 +76,9 @@ MAX_FILE_SIZE=10
 | Configuration key | Default value | Description |
 | ----------- | --------- | ----------- |
 | API_KEY | 00000000-0000-0000-0000-000000000000 | Api key for upload images |
-| API_KEY_HEADER | key | Header name for api key in request. |
+| API_KEY_HEADER | key | Header name for an API key in the request. |
 | CONVERT_TO_RES | 1024x720,800x600 | List of resolutions to which images will be converted. |
-| MAX_FILE_SIZE | 10 | Maximum size of file sent to the application in megabytes. |
+| MAX_FILE_SIZE | 10 | Maximum size of the file sent to the application in megabytes. |
 | CACHE_TIME | 30 | Image cache lifetime set in minutes. |
 
 
