@@ -3,7 +3,6 @@ package imageconverter
 import (
 	"bytes"
 	"image"
-	"log"
 	"os"
 	"strconv"
 
@@ -42,11 +41,15 @@ func saveFile(filePath string, fileName string, image image.Image, toWebp bool) 
 	b := new(bytes.Buffer)
 	if toWebp {
 		if err := webp.Encode(b, image, &webp.Options{Quality: 80}); err != nil {
-			log.Println(err)
+			appLogger.ErrorLogger.Println(err)
+			return err
 		}
 		path = path + ".webp"
 	} else {
-		png.Encode(b, image)
+		if err := png.Encode(b, image); err != nil {
+			appLogger.ErrorLogger.Println(err)
+			return err
+		}
 	}
 	newFile, err := os.Create(path)
 	if err != nil {
