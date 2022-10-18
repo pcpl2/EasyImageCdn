@@ -24,7 +24,7 @@ RUN addgroup -g 10002 appUser && \
 FROM gcr.io/distroless/static-debian11
 COPY --from=builder --chown=10003:10002 /build/imageCdn /
 COPY --from=builder-user /etc/passwd /etc/passwd
-COPY --from=builder --chown=10003:10002 /build/logs /logs
+COPY --from=builder --chown=10003:10002 /build/logs /var/log/eic/
 COPY --from=builder --chown=10003:10002 /build/images /var/lib/images/
 
 ENV IN_DOCKER=1 \
