@@ -13,6 +13,7 @@
 * Removed bimg library
 * Public api is not require adding source name for getting default image
 * Moved docker image from alpine to distro-less
+* Implemented app logger with saving to file.
 
 # 0.1.2 (07.01.2022)
 
