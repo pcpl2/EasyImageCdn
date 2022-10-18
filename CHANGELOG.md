@@ -1,4 +1,7 @@
-# 0.2 (???)
+# 0.3 (???)
+
+
+# 0.2 (18.10.2022)
 
 * Added fiber
 * Added Etag generate for public endpints
