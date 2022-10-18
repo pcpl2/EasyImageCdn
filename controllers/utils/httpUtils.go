@@ -7,5 +7,5 @@ import (
 )
 
 func ValidateAuth(ctx *fiber.Ctx, config models.ApiConfig) bool {
-	return string(ctx.Get(config.APIKeyHeader)) == config.APIKey
+	return ctx.Get(config.APIKeyHeader) == config.APIKey
 }

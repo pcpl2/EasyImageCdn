@@ -10,8 +10,8 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/etag"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 
-	appLogger "imageConverter.pcpl2lab.ovh/utils/logger"
 	biz "imageConverter.pcpl2lab.ovh/biz"
+	appLogger "imageConverter.pcpl2lab.ovh/utils/logger"
 
 	aApi "imageConverter.pcpl2lab.ovh/controllers/adminApis"
 	pApi "imageConverter.pcpl2lab.ovh/controllers/publicApis"
@@ -37,7 +37,6 @@ func main() {
 		Format:     "INFO: ${time} [${ip}]:${port} ${status}${latency} - ${method} ${path} ${ua}\n",
 		TimeFormat: "2006/01/02 15:04:05",
 		Output:     appLogger.LoggerWritter,
-
 	})
 
 	adminApp := fiber.New(fiber.Config{
@@ -49,13 +48,11 @@ func main() {
 	adminApp.Use(fiberLogger)
 
 	adminApp.Post("/v1/newImage", func(c *fiber.Ctx) error {
-		aApi.PostNewImage(c)
-		return nil
+		return aApi.PostNewImage(c)
 	})
 
 	adminApp.Post("/v1/newImageMp", func(c *fiber.Ctx) error {
-		aApi.PostNewImageMP(c)
-		return nil
+		return aApi.PostNewImageMP(c)
 	})
 
 	appLogger.InfoLogger.Printf("Starting HTTP server on 0.0.0.0:9324")
@@ -93,8 +90,7 @@ func main() {
 			fileName = spath[1]
 		}
 
-		pApi.GetImage(c, spath[0], fileName)
-		return nil
+		return pApi.GetImage(c, spath[0], fileName)
 	})
 
 	appLogger.InfoLogger.Printf("Starting HTTP server on 0.0.0.0:9555")

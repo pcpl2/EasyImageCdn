@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	"github.com/joho/godotenv"
-	appLogger "imageConverter.pcpl2lab.ovh/utils/logger"
 	models "imageConverter.pcpl2lab.ovh/models"
+	appLogger "imageConverter.pcpl2lab.ovh/utils/logger"
 )
 
 var config models.ApiConfig

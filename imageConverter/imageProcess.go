@@ -12,8 +12,8 @@ import (
 	"github.com/chai2010/webp"
 	"golang.org/x/image/draw"
 
-	appLogger "imageConverter.pcpl2lab.ovh/utils/logger"
 	models "imageConverter.pcpl2lab.ovh/models"
+	appLogger "imageConverter.pcpl2lab.ovh/utils/logger"
 )
 
 func ConvertImage(imagePath string, command []models.ConvertCommand) {
@@ -29,9 +29,9 @@ func ConvertImage(imagePath string, command []models.ConvertCommand) {
 			resized := image.NewNRGBA(image.Rect(0, 0, cmd.TargetRes.Width, cmd.TargetRes.Height))
 			draw.Draw(resized, resized.Bounds(), image.White, image.Point{}, draw.Src)
 			draw.ApproxBiLinear.Scale(resized, resized.Bounds(), org, org.Bounds(), draw.Src, nil)
-			saveFile(cmd.Path, strconv.Itoa(cmd.TargetRes.Width)+"x"+strconv.Itoa(cmd.TargetRes.Height), resized, cmd.WebP)
+			_ = saveFile(cmd.Path, strconv.Itoa(cmd.TargetRes.Width)+"x"+strconv.Itoa(cmd.TargetRes.Height), resized, cmd.WebP)
 		} else {
-			saveFile(cmd.Path, "source", *orginalImage, cmd.WebP)
+			_ = saveFile(cmd.Path, "source", *orginalImage, cmd.WebP)
 		}
 	}
 }
@@ -58,16 +58,16 @@ func saveFile(filePath string, fileName string, image image.Image, toWebp bool) 
 
 	defer newFile.Close()
 
-	b.WriteTo(newFile)
+	_, err = b.WriteTo(newFile)
 
-	return nil
+	return err
 }
 
 func openFile(filePath string) (*image.Image, error) {
 	file, err := os.Open(filePath)
 
 	if err != nil {
-		appLogger.ErrorLogger.Println("Cannot open file: "+err.Error())
+		appLogger.ErrorLogger.Println("Cannot open file: " + err.Error())
 		return nil, err
 	}
 	defer file.Close()
@@ -75,7 +75,7 @@ func openFile(filePath string) (*image.Image, error) {
 	decodedImage, _, err := image.Decode(file)
 
 	if err != nil && decodedImage == nil {
-		appLogger.ErrorLogger.Println("Cannot read file: "+err.Error())
+		appLogger.ErrorLogger.Println("Cannot read file: " + err.Error())
 		return nil, nil
 	}
 

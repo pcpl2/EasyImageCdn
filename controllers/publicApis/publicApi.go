@@ -8,16 +8,17 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 
-	appLogger "imageConverter.pcpl2lab.ovh/utils/logger"
 	biz "imageConverter.pcpl2lab.ovh/biz"
+	appLogger "imageConverter.pcpl2lab.ovh/utils/logger"
 )
 
-func GetImage(ctx *fiber.Ctx, id string, fileName string) {
+func GetImage(ctx *fiber.Ctx, id string, fileName string) error {
 	config, err := biz.GetConfig()
 	if err != nil {
-		ctx.SendStatus(fiber.StatusInternalServerError)
 		appLogger.ErrorLogger.Print(err)
+		return ctx.SendStatus(fiber.StatusInternalServerError)
 	}
+
 	acceptHeader := ctx.Get("Accept")
 
 	fileNameWithEx := fileName
@@ -27,10 +28,7 @@ func GetImage(ctx *fiber.Ctx, id string, fileName string) {
 	}
 	filePath := fmt.Sprintf("%s/%s/%s", config.FilesPath, id, fileNameWithEx)
 	if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
-		ctx.SendStatus(fiber.StatusNotFound)
-		return
+		return ctx.SendStatus(fiber.StatusNotFound)
 	}
-	ctx.SendFile(filePath, true)
-
-	//	httpUtils.SendFileHTTP(ctx, config, id, fileNameWithEx)
+	return ctx.SendFile(filePath, true)
 }
