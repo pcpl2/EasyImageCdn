@@ -57,7 +57,6 @@ func loadResolutions() {
 func GetConfig() (models.ApiConfig, error) {
 	if !loaded {
 		return config, errors.New("configuration not initialized")
-	} else {
-		return config, nil
 	}
+	return config, nil
 }
