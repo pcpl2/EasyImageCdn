@@ -8,13 +8,13 @@ This application automatically converts the uploaded image to webp format and to
 ## How to use
 
 ```sh
-docker run --name imagecdn -v /my/images/location:/images -e API_KEY=EnterAdminKey -d ghcr.io/pcpl2/easy_image_cdn:0.1.2
+docker run --name imagecdn -v /my/images/location:/var/lib/images -e API_KEY=EnterAdminKey -d ghcr.io/pcpl2/easy_image_cdn:0.1.2
 ```
 
 OR
 
 ```sh
-docker run --name imagecdn -v /my/images/location:/images -e API_KEY=EnterAdminKey -d pcpl2/easy_image_cdn:0.1.2
+docker run --name imagecdn -v /my/images/location:/var/lib/images -e API_KEY=EnterAdminKey -d pcpl2/easy_image_cdn:0.1.2
 ```
 
 This command launches the application with image conversion to 1024x720 and 800x600 enabled, with a maximum file size of 10Mb and your api key.

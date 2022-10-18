@@ -13,7 +13,7 @@ var (
 	LoggerWritter io.Writer
 )
 
-const logPath = "/logs"
+const logPath = "/var/log/eic"
 
 func StartLogger() {
 	LoggerWritter = os.Stderr
