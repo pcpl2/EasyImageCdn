@@ -1,4 +1,4 @@
-name: Build cdn server to docker repo.
+name: Publish new version
 
 on:
     workflow_dispatch:
