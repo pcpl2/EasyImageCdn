@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"strings"
 	"time"
 
@@ -11,6 +10,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/etag"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 
+	appLogger "imageConverter.pcpl2lab.ovh/utils/logger"
 	biz "imageConverter.pcpl2lab.ovh/biz"
 
 	aApi "imageConverter.pcpl2lab.ovh/controllers/adminApis"
@@ -19,21 +19,25 @@ import (
 )
 
 func main() {
-	log.Print("Loading config..")
+	appLogger.StartLogger()
+	appLogger.InfoLogger.Print("Loading config..")
 	biz.InitConfiguration()
 	config, err := biz.GetConfig()
 	if err != nil {
-		log.Fatal(err)
+		appLogger.ErrorLogger.Fatal(err)
 	}
 
 	if config.APIKey == "" || config.APIKey == "00000000-0000-0000-0000-000000000000" {
-		log.Fatalln("*ERROR* The application will not start without setting the value API_KEY")
+		appLogger.ErrorLogger.Fatalln("*ERROR* The application will not start without setting the value API_KEY")
 	}
 
-	log.Print("Configuration loaded.")
+	appLogger.InfoLogger.Print("Configuration loaded.")
 
 	fiberLogger := logger.New(logger.Config{
-		Format: "[${ip}]:${port} ${status} - ${latency} - ${method} ${path}\n",
+		Format:     "INFO: ${time} [${ip}]:${port} ${status}${latency} - ${method} ${path} ${ua}\n",
+		TimeFormat: "2006/01/02 15:04:05",
+		Output:     appLogger.LoggerWritter,
+
 	})
 
 	adminApp := fiber.New(fiber.Config{
@@ -54,10 +58,10 @@ func main() {
 		return nil
 	})
 
-	log.Printf("Starting HTTP server on 0.0.0.0:9324")
+	appLogger.InfoLogger.Printf("Starting HTTP server on 0.0.0.0:9324")
 	go func() {
 		if err := adminApp.Listen("0.0.0.0:9324"); err != nil {
-			log.Fatalf("error in adminApp.Listen: %s", err)
+			appLogger.ErrorLogger.Fatalf("error in adminApp.Listen: %s", err)
 		}
 	}()
 
@@ -93,10 +97,10 @@ func main() {
 		return nil
 	})
 
-	log.Printf("Starting HTTP server on 0.0.0.0:9555")
+	appLogger.InfoLogger.Printf("Starting HTTP server on 0.0.0.0:9555")
 	go func() {
 		if err := publicApp.Listen("0.0.0.0:9555"); err != nil {
-			log.Fatalf("error in publicApp.Listen: %s", err)
+			appLogger.ErrorLogger.Fatalf("error in publicApp.Listen: %s", err)
 		}
 	}()
 

@@ -3,12 +3,12 @@ package publicapis
 import (
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
 
+	appLogger "imageConverter.pcpl2lab.ovh/utils/logger"
 	biz "imageConverter.pcpl2lab.ovh/biz"
 )
 
@@ -16,14 +16,13 @@ func GetImage(ctx *fiber.Ctx, id string, fileName string) {
 	config, err := biz.GetConfig()
 	if err != nil {
 		ctx.SendStatus(fiber.StatusInternalServerError)
-		log.Fatal(err)
+		appLogger.ErrorLogger.Print(err)
 	}
-	acceptHeader := string(ctx.Get("Accept"))
+	acceptHeader := ctx.Get("Accept")
 
 	fileNameWithEx := fileName
 
 	if strings.Contains(acceptHeader, "image/webp") {
-		log.Printf("Send webp file.")
 		fileNameWithEx = fmt.Sprintf("%s.webp", fileName)
 	}
 	filePath := fmt.Sprintf("%s/%s/%s", config.FilesPath, id, fileNameWithEx)

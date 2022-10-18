@@ -4,11 +4,12 @@ import (
 	"encoding/base64"
 	"io"
 
-	"log"
 	"net/url"
 	"os"
 
 	"github.com/gofiber/fiber/v2"
+
+	appLogger "imageConverter.pcpl2lab.ovh/utils/logger"
 
 	httpUtils "imageConverter.pcpl2lab.ovh/controllers/utils"
 
@@ -21,25 +22,25 @@ func PostNewImage(ctx *fiber.Ctx) {
 	config, err := biz.GetConfig()
 	if err != nil {
 		ctx.SendStatus(fiber.StatusUnauthorized)
-		log.Fatal(err)
+		appLogger.ErrorLogger.Println(err)
 	}
 
 	if !ctx.Is("json") {
 		ctx.SendStatus(fiber.StatusBadRequest)
-		log.Print("*ERROR* invalid content type")
+		appLogger.WarningLogger.Print("Invalid content type")
 		return
 	}
 
 	if !httpUtils.ValidateAuth(ctx, config) {
 		ctx.SendStatus(fiber.StatusUnauthorized)
-		log.Print("*ERROR* Auth error")
+		appLogger.WarningLogger.Print("Auth error")
 		return
 	}
 
 	var Payload models.ImagePayload
 
 	if err := ctx.BodyParser(&Payload); err != nil {
-		log.Print("*ERROR* " + err.Error())
+		appLogger.WarningLogger.Print(err.Error())
 		ctx.SendStatus(fiber.StatusBadRequest)
 		return
 	}
@@ -47,7 +48,6 @@ func PostNewImage(ctx *fiber.Ctx) {
 	imageFolderPath := config.FilesPath + "/" + url.PathEscape(Payload.ID)
 
 	if err := createFileFolder(config, imageFolderPath, ctx); err != nil {
-		log.Print("*ERROR* " + err.Error())
 		ctx.SendStatus(fiber.StatusBadRequest)
 		return
 	}
@@ -55,7 +55,7 @@ func PostNewImage(ctx *fiber.Ctx) {
 	dec, err := base64.StdEncoding.DecodeString(Payload.Image)
 	if err != nil {
 		ctx.SendStatus(fiber.StatusNoContent)
-		log.Print("*ERROR* Cannot read file from payload " + err.Error())
+		appLogger.ErrorLogger.Print("Cannot read file from payload " + err.Error())
 		return
 	}
 
@@ -75,26 +75,28 @@ func PostNewImageMP(ctx *fiber.Ctx) {
 	config, err := biz.GetConfig()
 	if err != nil {
 		ctx.SendStatus(fiber.StatusUnauthorized)
-		log.Fatal(err)
+		appLogger.ErrorLogger.Println(err)
 	}
 
 	if !httpUtils.ValidateAuth(ctx, config) {
 		ctx.SendStatus(fiber.StatusUnauthorized)
-		log.Print("*ERROR* Auth error")
+		appLogger.WarningLogger.Print("*ERROR* Auth error")
 		return
 	}
 
-	imageId := string(ctx.Query("imageId"))
+	imageId := ctx.Query("imageId")
 
 	if imageId == "" {
 		ctx.SendStatus(fiber.StatusBadRequest)
-		log.Print("*ERROR* Invalid image id")
+		appLogger.WarningLogger.Print("Invalid image id")
 		return
 	}
 
 	imageFolderPath := config.FilesPath + "/" + url.PathEscape(imageId)
 
 	if err := createFileFolder(config, imageFolderPath, ctx); err != nil {
+		appLogger.ErrorLogger.Print("Cannot create folder: " + err.Error())
+		ctx.SendStatus(fiber.StatusBadRequest)
 		return
 	}
 
@@ -105,7 +107,7 @@ func PostNewImageMP(ctx *fiber.Ctx) {
 
 	if err != nil {
 		ctx.SendStatus(fiber.StatusBadRequest)
-		log.Print("Invalid content type")
+		appLogger.WarningLogger.Print("Invalid content type")
 		return
 
 	}
@@ -113,16 +115,19 @@ func PostNewImageMP(ctx *fiber.Ctx) {
 	hFile, err := file.Open()
 	if err != nil {
 		ctx.SendStatus(fiber.StatusBadRequest)
+		appLogger.ErrorLogger.Print("Cannot open file: " + err.Error())
 		return
 	}
 
 	fbytes, err := io.ReadAll(hFile)
 	if err != nil {
 		ctx.SendStatus(fiber.StatusBadRequest)
+		appLogger.ErrorLogger.Print("Cannot read file: " + err.Error())
 		return
 	}
 
 	if err := saveFile(config, sourcePath, fbytes, ctx); err != nil {
+		appLogger.ErrorLogger.Print("Cannot save file: " + err.Error())
 		return
 	}
 
@@ -136,7 +141,7 @@ func createFileFolder(config models.ApiConfig, imageFolderPath string, ctx *fibe
 		errMkDir := os.Mkdir(imageFolderPath, 0755)
 		if errMkDir != nil {
 			ctx.SendStatus(fiber.StatusNoContent)
-			log.Print("*ERROR* Failed to create folder " + errMkDir.Error())
+			appLogger.ErrorLogger.Print("Failed to create folder: " + errMkDir.Error())
 			return errMkDir
 		}
 	}
@@ -147,20 +152,20 @@ func saveFile(config models.ApiConfig, sourcePath string, file []byte, ctx *fibe
 	f, err := os.OpenFile(sourcePath, os.O_WRONLY|os.O_CREATE, 0777)
 	if err != nil {
 		ctx.SendStatus(fiber.StatusNoContent)
-		log.Print("*ERROR* Cannot open file " + err.Error())
+		appLogger.ErrorLogger.Print("*ERROR* Cannot open file " + err.Error())
 		return err
 	}
 	defer f.Close()
 
 	if _, err := f.Write(file); err != nil {
 		ctx.SendStatus(fiber.StatusNoContent)
-		log.Print("*ERROR* Cannot write file " + err.Error())
+		appLogger.ErrorLogger.Print("*ERROR* Cannot write file " + err.Error())
 		return err
 	}
 
 	if err := f.Sync(); err != nil {
 		ctx.SendStatus(fiber.StatusNoContent)
-		log.Print("*ERROR* Cannot sync file " + err.Error())
+		appLogger.ErrorLogger.Print("*ERROR* Cannot sync file " + err.Error())
 		return err
 	}
 

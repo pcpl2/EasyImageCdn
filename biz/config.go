@@ -2,12 +2,12 @@ package biz
 
 import (
 	"errors"
-	"log"
 	"os"
 	"strconv"
 	"strings"
 
 	"github.com/joho/godotenv"
+	appLogger "imageConverter.pcpl2lab.ovh/utils/logger"
 	models "imageConverter.pcpl2lab.ovh/models"
 )
 
@@ -18,7 +18,7 @@ func InitConfiguration() {
 	if os.Getenv("IN_DOCKER") != "1" {
 		err := godotenv.Load(".env")
 		if err != nil {
-			log.Println("Error with loading .env file: " + err.Error())
+			appLogger.ErrorLogger.Println("Error with loading .env file: " + err.Error())
 		}
 	}
 

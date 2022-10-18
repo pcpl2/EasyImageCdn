@@ -2,7 +2,6 @@ package imageconverter
 
 import (
 	"bytes"
-	"fmt"
 	"image"
 	"log"
 	"os"
@@ -13,14 +12,15 @@ import (
 
 	"github.com/chai2010/webp"
 	"golang.org/x/image/draw"
+
+	appLogger "imageConverter.pcpl2lab.ovh/utils/logger"
 	models "imageConverter.pcpl2lab.ovh/models"
 )
 
 func ConvertImage(imagePath string, command []models.ConvertCommand) {
 	orginalImage, err := openFile(imagePath)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		//TODO log error
+		appLogger.ErrorLogger.Println(err)
 		return
 	}
 
@@ -64,17 +64,17 @@ func openFile(filePath string) (*image.Image, error) {
 	file, err := os.Open(filePath)
 
 	if err != nil {
-		println("Cannot open file: " + err.Error())
+		appLogger.ErrorLogger.Println("Cannot open file: "+err.Error())
 		return nil, err
 	}
 	defer file.Close()
 
-	image, _, err := image.Decode(file)
+	decodedImage, _, err := image.Decode(file)
 
-	if err != nil && image == nil {
-		println("Cannot read image: " + err.Error())
+	if err != nil && decodedImage == nil {
+		appLogger.ErrorLogger.Println("Cannot read file: "+err.Error())
 		return nil, nil
 	}
 
-	return &image, nil
+	return &decodedImage, nil
 }
