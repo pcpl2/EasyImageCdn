@@ -2,3 +2,4 @@ __debug_bin
 config.json
 imageCdn
 .env
+.idea*

@@ -4,9 +4,9 @@ go 1.19
 
 require (
 	github.com/chai2010/webp v1.1.1
-	github.com/gofiber/fiber/v2 v2.39.0
+	github.com/gofiber/fiber/v2 v2.40.1
 	github.com/joho/godotenv v1.4.0
-	golang.org/x/image v0.1.0
+	golang.org/x/image v0.2.0
 )
 
 require (
@@ -17,7 +17,7 @@ require (
 	github.com/mattn/go-runewidth v0.0.14 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
-	github.com/valyala/fasthttp v1.40.0 // indirect
+	github.com/valyala/fasthttp v1.41.0 // indirect
 	github.com/valyala/tcplisten v1.0.0 // indirect
 	golang.org/x/sys v0.1.0 // indirect
 )

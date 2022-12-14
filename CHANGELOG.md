@@ -1,7 +1,7 @@
-# 0.3 (???)
+# 0.2.2 (???)
 * Updated go version to 1.19
-* Updated fiber to 2.39.0
-* Updated go image to 0.1.0
+* Updated fiber to 2.40.1
+* Updated go image to 0.2.0
 
 # 0.2.1 (18.10.2022)
 * Fixed logs path in container
