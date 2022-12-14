@@ -4,6 +4,7 @@
 * Updated go image to 0.2.0
 * Small fix for logs directory create
 * Added app version and build time in code
+* Added endpoint for monitoring expvar
 
 # 0.2.1 (18.10.2022)
 * Fixed logs path in container

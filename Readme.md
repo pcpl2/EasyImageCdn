@@ -80,6 +80,7 @@ MAX_FILE_SIZE=10
 | CONVERT_TO_RES | 1024x720,800x600 | List of resolutions to which images will be converted. |
 | MAX_FILE_SIZE | 10 | Maximum size of the file sent to the application in megabytes. |
 | CACHE_TIME | 30 | Image cache lifetime set in minutes. |
+| EXPVAR_ENABLED | 0 | Enable golang Expvar for monitoring. Data is available on `0.0.0.0:9125/debug/vars` |
 
 
 ### Volumes configuration in container

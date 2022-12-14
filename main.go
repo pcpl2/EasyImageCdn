@@ -1,6 +1,7 @@
 package main
 
 import (
+	"os"
 	"strings"
 	"time"
 
@@ -8,6 +9,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/cache"
 	"github.com/gofiber/fiber/v2/middleware/compress"
 	"github.com/gofiber/fiber/v2/middleware/etag"
+	expvarmw "github.com/gofiber/fiber/v2/middleware/expvar"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 
 	"easy-image-cdn.pcpl2lab.ovh/app/build"
@@ -101,6 +103,19 @@ func main() {
 		}
 	}()
 
+	if os.Getenv("EXPVAR_ENABLED") == "1" {
+		expvarHttp := fiber.New(fiber.Config{
+			DisableStartupMessage: true,
+			ServerHeader:          "",
+		})
+		expvarHttp.Use(expvarmw.New())
+		go func() {
+			appLogger.InfoLogger.Printf("Expvar started on 0.0.0.0:9125")
+			if err := expvarHttp.Listen(":9125"); err != nil {
+				appLogger.ErrorLogger.Fatalf("error in expvarHttp.Listen: %s", err)
+			}
+		}()
+	}
 	appLogger.InfoLogger.Printf("Started EasyImageCdn %s (Builded at %s)", build.Version, build.Time)
 
 	select {}
