@@ -10,6 +10,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/etag"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 
+	"easy-image-cdn.pcpl2lab.ovh/app/build"
 	biz "easy-image-cdn.pcpl2lab.ovh/biz"
 	appLogger "easy-image-cdn.pcpl2lab.ovh/utils/logger"
 
@@ -99,6 +100,8 @@ func main() {
 			appLogger.ErrorLogger.Fatalf("error in publicApp.Listen: %s", err)
 		}
 	}()
+
+	appLogger.InfoLogger.Printf("Started EasyImageCdn %s (Builded at %s)", build.Version, build.Time)
 
 	select {}
 }

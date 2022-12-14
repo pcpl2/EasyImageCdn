@@ -9,7 +9,7 @@ on:
 jobs:
   build_non_docker:
     name: Build non docker version
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
     - name: Checkout repository
@@ -24,7 +24,7 @@ jobs:
 
     - name: Update apt
       env:
-          DEBIAN_FRONTEND: noninteractive
+        DEBIAN_FRONTEND: noninteractive
       run:
         sudo apt-get update -qq -o Acquire::Retries=3
 
@@ -32,7 +32,7 @@ jobs:
       run: go env -w GO111MODULE=auto CGO_ENABLED=1 GOOS=linux && go get -d -v
 
     - name: Start build script
-      run: go build -v ./...
+      run: go build -v -X 'easy-image-cdn.pcpl2lab.ovh/app/build.Version=latest' -X 'easy-image-cdn.pcpl2lab.ovh/app/build.Time=$(date)' ./...
 
     - name: Run image converter test
       run: go test -v ./imageConverter
@@ -62,3 +62,5 @@ jobs:
           push: false
           platforms: linux/amd64, linux/arm64
           tags:  pcpl2/easy_image_cdn:latest,ghcr.io/pcpl2/easy_image_cdn:latest
+          build-args: |
+            App_Version=latest

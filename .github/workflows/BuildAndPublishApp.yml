@@ -9,7 +9,7 @@ on:
 jobs:
   build:
     name: Build and publish
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
     - name: Checkout repository
@@ -45,6 +45,8 @@ jobs:
         push: true
         platforms: linux/amd64, linux/arm64
         tags: pcpl2/easy_image_cdn:latest,pcpl2/easy_image_cdn:${{ github.event.inputs.version }},ghcr.io/pcpl2/easy_image_cdn:latest,ghcr.io/pcpl2/easy_image_cdn:${{ github.event.inputs.version }}
+        build-args: |
+            App_Version=${{ github.event.inputs.version }}
 
     - name: Create release on github
       uses: softprops/action-gh-release@v1

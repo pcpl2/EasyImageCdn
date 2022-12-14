@@ -1,5 +1,7 @@
 FROM golang:1.19.3-bullseye AS builder
 
+ARG App_Version
+
 RUN apt-get update && apt-get --no-install-recommends -y install musl musl-dev musl-tools
 
 WORKDIR /build
@@ -8,7 +10,7 @@ COPY . .
 
 RUN go env -w CGO_ENABLED=1 GOOS=linux CC=/usr/bin/musl-gcc
 RUN go get -d -v
-RUN go build -v -ldflags="-linkmode external -extldflags=-static -w -s" -o imageCdn .
+RUN go build -v -ldflags="-linkmode external -extldflags=-static -w -s -X 'easy-image-cdn.pcpl2lab.ovh/app/build.Version=${App_Version}' -X 'easy-image-cdn.pcpl2lab.ovh/app/build.Time=$(date)'" -o imageCdn .
 RUN go test -v ./imageConverter
 
 RUN mkdir -p images
