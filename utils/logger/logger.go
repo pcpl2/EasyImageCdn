@@ -21,7 +21,7 @@ func StartLogger() {
 	ErrorLogger = log.New(LoggerWritter, "ERROR: ", logFlags)
 
 	if _, err := os.Stat(logPath); os.IsNotExist(err) {
-		errMkDir := os.Mkdir(logPath, 0666)
+		errMkDir := os.Mkdir(logPath, 0777)
 		if errMkDir != nil {
 			ErrorLogger.Println("Cannot create log's directory " + errMkDir.Error())
 		}
