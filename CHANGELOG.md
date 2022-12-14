@@ -5,6 +5,7 @@
 * Small fix for logs directory create
 * Added app version and build time in code
 * Added endpoint for monitoring expvar
+* Added endpoint for monitoring Pprof
 
 # 0.2.1 (18.10.2022)
 * Fixed logs path in container
