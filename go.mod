@@ -1,4 +1,4 @@
-module imageConverter.pcpl2lab.ovh
+module easy-image-cdn.pcpl2lab.ovh
 
 go 1.19
 

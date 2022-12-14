@@ -12,8 +12,8 @@ import (
 	"github.com/chai2010/webp"
 	"golang.org/x/image/draw"
 
-	models "imageConverter.pcpl2lab.ovh/models"
-	appLogger "imageConverter.pcpl2lab.ovh/utils/logger"
+	models "easy-image-cdn.pcpl2lab.ovh/models"
+	appLogger "easy-image-cdn.pcpl2lab.ovh/utils/logger"
 )
 
 func ConvertImage(imagePath string, command []models.ConvertCommand) {

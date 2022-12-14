@@ -10,12 +10,12 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/etag"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 
-	biz "imageConverter.pcpl2lab.ovh/biz"
-	appLogger "imageConverter.pcpl2lab.ovh/utils/logger"
+	biz "easy-image-cdn.pcpl2lab.ovh/biz"
+	appLogger "easy-image-cdn.pcpl2lab.ovh/utils/logger"
 
-	aApi "imageConverter.pcpl2lab.ovh/controllers/adminApis"
-	pApi "imageConverter.pcpl2lab.ovh/controllers/publicApis"
-	utils "imageConverter.pcpl2lab.ovh/controllers/utils"
+	aApi "easy-image-cdn.pcpl2lab.ovh/controllers/adminApis"
+	pApi "easy-image-cdn.pcpl2lab.ovh/controllers/publicApis"
+	utils "easy-image-cdn.pcpl2lab.ovh/controllers/utils"
 )
 
 func main() {

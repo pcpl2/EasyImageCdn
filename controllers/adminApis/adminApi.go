@@ -9,13 +9,13 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 
-	appLogger "imageConverter.pcpl2lab.ovh/utils/logger"
+	appLogger "easy-image-cdn.pcpl2lab.ovh/utils/logger"
 
-	httpUtils "imageConverter.pcpl2lab.ovh/controllers/utils"
+	httpUtils "easy-image-cdn.pcpl2lab.ovh/controllers/utils"
 
-	biz "imageConverter.pcpl2lab.ovh/biz"
-	ic "imageConverter.pcpl2lab.ovh/imageConverter"
-	models "imageConverter.pcpl2lab.ovh/models"
+	biz "easy-image-cdn.pcpl2lab.ovh/biz"
+	ic "easy-image-cdn.pcpl2lab.ovh/imageConverter"
+	models "easy-image-cdn.pcpl2lab.ovh/models"
 )
 
 func PostNewImage(ctx *fiber.Ctx) error {
