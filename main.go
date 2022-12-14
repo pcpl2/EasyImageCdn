@@ -11,6 +11,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/etag"
 	expvarmw "github.com/gofiber/fiber/v2/middleware/expvar"
 	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/gofiber/fiber/v2/middleware/pprof"
 
 	"easy-image-cdn.pcpl2lab.ovh/app/build"
 	biz "easy-image-cdn.pcpl2lab.ovh/biz"
@@ -103,19 +104,26 @@ func main() {
 		}
 	}()
 
-	if os.Getenv("EXPVAR_ENABLED") == "1" {
-		expvarHttp := fiber.New(fiber.Config{
+	//App monitoring
+	if os.Getenv("EXPVAR_ENABLED") == "1" || os.Getenv("PPROF_ENABLED") == "1" {
+		appMonitoring := fiber.New(fiber.Config{
 			DisableStartupMessage: true,
 			ServerHeader:          "",
 		})
-		expvarHttp.Use(expvarmw.New())
+		if os.Getenv("EXPVAR_ENABLED") == "1" {
+			appMonitoring.Use(expvarmw.New())
+		}
+		if os.Getenv("PPROF_ENABLED") == "1" {
+			appMonitoring.Use(pprof.New())
+		}
 		go func() {
-			appLogger.InfoLogger.Printf("Expvar started on 0.0.0.0:9125")
-			if err := expvarHttp.Listen(":9125"); err != nil {
+			appLogger.InfoLogger.Printf("App Monitoring started on 0.0.0.0:9125")
+			if err := appMonitoring.Listen(":9125"); err != nil {
 				appLogger.ErrorLogger.Fatalf("error in expvarHttp.Listen: %s", err)
 			}
 		}()
 	}
+
 	appLogger.InfoLogger.Printf("Started EasyImageCdn %s (Builded at %s)", build.Version, build.Time)
 
 	select {}
