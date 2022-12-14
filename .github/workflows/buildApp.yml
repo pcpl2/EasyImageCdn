@@ -32,7 +32,7 @@ jobs:
       run: go env -w GO111MODULE=auto CGO_ENABLED=1 GOOS=linux && go get -d -v
 
     - name: Start build script
-      run: go build -v -X 'easy-image-cdn.pcpl2lab.ovh/app/build.Version=latest' -X 'easy-image-cdn.pcpl2lab.ovh/app/build.Time=$(date)' ./...
+      run: go build -v -ldflags="-w -s -X 'easy-image-cdn.pcpl2lab.ovh/app/build.Version=latest' -X 'easy-image-cdn.pcpl2lab.ovh/app/build.Time=$(date)'" ./...
 
     - name: Run image converter test
       run: go test -v ./imageConverter
