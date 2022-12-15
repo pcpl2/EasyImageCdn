@@ -60,6 +60,28 @@ func TestConvertImageTo64X64WebP(t *testing.T) {
 	cleanAfterTest("../testImages/64x64.webp")
 }
 
+func TestConvertImageTo64X64Heic(t *testing.T) {
+	ConvertImage("../testImages/350x150.png", []models.ConvertCommand{
+		{
+			Path:       "../testImages" + "/",
+			Heic:       true,
+			ConvertRes: true,
+			TargetRes:  models.ResElement{Width: 64, Height: 64},
+		},
+	})
+
+	checksum, err := calcuateCheckSumForFile("../testImages/64x64.heif")
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+
+	if *checksum != "386278218f9fbbde8c2ad6112d696f1d8e0b1a8b5265b0f9ef5f9457b91c396a" {
+		t.Failed()
+	}
+
+	cleanAfterTest("../testImages/64x64.heif")
+}
+
 func calcuateCheckSumForFile(filePath string) (*string, error) {
 	s, err := os.ReadFile(filePath)
 	hasher := sha256.New()

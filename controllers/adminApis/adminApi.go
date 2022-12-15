@@ -164,6 +164,7 @@ func createConvertCommands(config models.ApiConfig, imageFolderPath string) []mo
 	queueList = append(queueList, models.ConvertCommand{
 		Path:       imageFolderPath + "/",
 		WebP:       true,
+		Heic:       true,
 		ConvertRes: false,
 	})
 
@@ -171,6 +172,7 @@ func createConvertCommands(config models.ApiConfig, imageFolderPath string) []mo
 		queueList = append(queueList, models.ConvertCommand{
 			Path:       imageFolderPath + "/",
 			WebP:       true,
+			Heic:       true,
 			ConvertRes: true,
 			TargetRes:  element,
 		})

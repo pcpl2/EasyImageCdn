@@ -6,6 +6,7 @@ require (
 	github.com/chai2010/webp v1.1.1
 	github.com/gofiber/fiber/v2 v2.40.1
 	github.com/joho/godotenv v1.4.0
+	github.com/strukturag/libheif v1.14.0
 	golang.org/x/image v0.2.0
 )
 

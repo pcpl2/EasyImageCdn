@@ -17,6 +17,7 @@ type ResElement struct {
 type ConvertCommand struct {
 	Path       string
 	WebP       bool
+	Heic       bool
 	ConvertRes bool
 	TargetRes  ResElement
 }
