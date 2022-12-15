@@ -26,7 +26,7 @@ func ConvertImage(imagePath string, command []models.ConvertCommand) {
 	for _, cmd := range command {
 		if cmd.ConvertRes {
 			org := *orginalImage
-			resized := image.NewNRGBA(image.Rect(0, 0, cmd.TargetRes.Width, cmd.TargetRes.Height))
+			resized := image.NewRGBA(image.Rect(0, 0, cmd.TargetRes.Width, cmd.TargetRes.Height))
 			draw.Draw(resized, resized.Bounds(), image.White, image.Point{}, draw.Src)
 			draw.ApproxBiLinear.Scale(resized, resized.Bounds(), org, org.Bounds(), draw.Src, nil)
 			_ = saveFile(cmd.Path, strconv.Itoa(cmd.TargetRes.Width)+"x"+strconv.Itoa(cmd.TargetRes.Height), resized, cmd.WebP)
