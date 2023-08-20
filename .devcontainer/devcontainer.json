@@ -1,26 +1,62 @@
 {
     "name": "Image converter",
-	"dockerComposeFile": "docker-compose.yml",
-    "service": "app",
-	"workspaceFolder": "/workspace",
-    "extensions": ["golang.go", "davidanson.vscode-markdownlint", "IBM.output-colorizer"],
-    "forwardPorts": [9324, 9555],
-
-	// Comment out connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
-    //"remoteUser": "vscode",
-    "settings": {
-        "go.useLanguageServer": true,
-        "terminal.integrated.defaultProfile.linux": "zsh"
+    "dockerFile": "Dockerfile",
+    // "dockerComposeFile": "docker-compose.yml",
+    // "service": "app",
+    "forwardPorts": [
+        9324,
+        9555
+    ],
+    "customizations": {
+        "codespaces": {
+            "openFiles": []
+        },
+        "vscode": {
+            "settings": {
+                "go.useLanguageServer": true,
+                "terminal.integrated.defaultProfile.linux": "zsh",
+                "files.eol": "\n",
+                "go.testFlags": [
+                    "-v",
+                    "-race"
+                ],
+                "go.toolsEnvVars": {
+                    "CGO_ENABLED": "0"
+                },
+                "editor.formatOnSave": true,
+                "go.buildTags": "",
+                "[go]": {
+                    "editor.codeActionsOnSave": {
+                        "source.organizeImports": true
+                    }
+                },
+                "gopls": {
+                    "usePlaceholders": false,
+                    "staticcheck": true,
+                    "vulncheck": "Imports"
+                }
+            },
+            "extensions": [
+                "golang.go",
+                "eamodio.gitlens", // IDE Git information
+                "vscode-icons-team.vscode-icons", // Better file extension icons
+                "davidanson.vscode-markdownlint",
+                "IBM.output-colorizer"
+            ]
+        }
     },
-    "postCreateCommand": "go mod download",
-
-    "runArgs": [
-        "-u",
-        "vscode",
-        "–cap-add=SYS_PTRACE",
-        "–security-opt",
-        "seccomp=unconfined",
-        // map SSH keys for Git
-        "-v", "${env:HOME}/.ssh:/root/.ssh:ro"
-        ],
+    // Comment out connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
+    //"remoteUser": "vscode",
+    //"postCreateCommand": "go mod download",
+    "postCreateCommand": "go mod download && go mod tidy && go get -u golang.org/x/tools/gopls@latest"
+    // "runArgs": [
+    //     "-u",
+    //     "vscode",
+    //     "–cap-add=SYS_PTRACE",
+    //     "–security-opt",
+    //     "seccomp=unconfined",
+    //     // map SSH keys for Git
+    //     "-v",
+    //     "${env:HOME}/.ssh:/root/.ssh:ro"
+    // ],
 }
