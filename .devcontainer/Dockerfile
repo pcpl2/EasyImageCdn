@@ -1,4 +1,4 @@
-FROM golang:alpine3.18
+FROM golang:1.21.0-alpine3.18
 
 RUN apk add --update --no-cache git zsh build-base openssh
 RUN sh -c "$(wget -O- https://github.com/deluan/zsh-in-docker/releases/download/v1.1.2/zsh-in-docker.sh)" -- \

@@ -1,4 +1,4 @@
-FROM golang:1.19.3-bullseye AS builder
+FROM golang:1.21.0-bullseye AS builder
 
 ARG App_Version
 
@@ -18,7 +18,7 @@ RUN touch images/dontRemoveMe.txt
 RUN mkdir -p logs
 RUN touch logs/dontRemoveMe.txt
 
-FROM busybox:1.34.1 AS builder-user
+FROM busybox:1.36.1 AS builder-user
 
 RUN addgroup -g 10002 appUser && \
     adduser -D -u 10003 -G appUser appUser
