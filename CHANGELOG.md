@@ -1,4 +1,4 @@
-# 0.2.2 (???)
+# 0.2.2 (21.08.2023)
 
 * Updated go version to 1.21
 * Updated fiber to 2.48.0
