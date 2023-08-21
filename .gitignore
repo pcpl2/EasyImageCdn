@@ -3,3 +3,6 @@ config.json
 imageCdn
 .env
 .idea*
+
+easy-image-cdn.pcpl2lab.ovh
+__debug_bin*
