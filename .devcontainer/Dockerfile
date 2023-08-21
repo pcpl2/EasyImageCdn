@@ -11,5 +11,6 @@ RUN sh -c "$(wget -O- https://github.com/deluan/zsh-in-docker/releases/download/
 
 RUN go env -w GO111MODULE=auto
 RUN go env -w CGO_ENABLED=1
+ENV CGO_ENABLED=1
 RUN go install github.com/go-delve/delve/cmd/dlv@latest
 RUN go install github.com/ramya-rao-a/go-outline@v0.0.0-20210608161538-9736a4bde949 
