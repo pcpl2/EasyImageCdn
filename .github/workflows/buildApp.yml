@@ -2,29 +2,28 @@ name: Build
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, "dev" ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, "dev" ]
 
 jobs:
   build_non_docker:
     name: Build non docker version
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3.1.0
+      uses: actions/checkout@v3.5.3
 
     - name: Set up Go
-      uses: actions/setup-go@v3.3.1
+      uses: actions/setup-go@v4.1.0
       with:
         go-version-file: go.mod
-        cache: true
         cache-dependency-path: go.sum
 
     - name: Update apt
       env:
-          DEBIAN_FRONTEND: noninteractive
+        DEBIAN_FRONTEND: noninteractive
       run:
         sudo apt-get update -qq -o Acquire::Retries=3
 
@@ -32,7 +31,7 @@ jobs:
       run: go env -w GO111MODULE=auto CGO_ENABLED=1 GOOS=linux && go get -d -v
 
     - name: Start build script
-      run: go build -v ./...
+      run: go build -v -ldflags="-w -s -X 'easy-image-cdn.pcpl2lab.ovh/app/build.Version=latest' -X 'easy-image-cdn.pcpl2lab.ovh/app/build.Time=$(date)'" ./...
 
     - name: Run image converter test
       run: go test -v ./imageConverter
@@ -42,23 +41,25 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      -  name: Checkout repository 
-         uses: actions/checkout@v3.1.0
+      - name: Checkout repository
+        uses: actions/checkout@v3.5.3
 
       - name: Set up QEMU
         id: qemu
-        uses: docker/setup-qemu-action@v2.1.0
+        uses: docker/setup-qemu-action@v2.2.0
         with:
           image: tonistiigi/binfmt:qemu-v7.0.0-28
           platforms: all
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2.2.1
+        uses: docker/setup-buildx-action@v2.9.1
 
       - name: buildDocker
-        uses: docker/build-push-action@v3.2.0
+        uses: docker/build-push-action@v4.1.1
         with:
           context: .
           push: false
           platforms: linux/amd64, linux/arm64
           tags:  pcpl2/easy_image_cdn:latest,ghcr.io/pcpl2/easy_image_cdn:latest
+          build-args: |
+            App_Version=latest

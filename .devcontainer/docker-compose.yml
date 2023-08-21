@@ -9,12 +9,17 @@ services:
         # On Linux, you may need to update USER_UID and USER_GID below if not your local UID is not 1000.
       #  USER_UID: 10002
       #  USER_GID: 10002
-
+    environment:
+      - TZ=
     volumes:
       - ..:/workspace:cached
-
-    # Overrides default command so things don't shut down after the process ends.
-    command: sleep infinity
+    cap_add:
+      # For debugging with dlv
+      - SYS_PTRACE
 
     # Uncomment the next line to use a non-root user for all processes.
     # user: vscode
+    security_opt:
+      # For debugging with dlv
+      - seccomp:unconfined
+    entrypoint: [ "zsh", "-c", "while sleep 1000; do :; done" ]

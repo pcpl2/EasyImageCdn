@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	models "imageConverter.pcpl2lab.ovh/models"
+	models "easy-image-cdn.pcpl2lab.ovh/models"
 )
 
 func TestOpenImage(t *testing.T) {

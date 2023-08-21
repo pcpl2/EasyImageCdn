@@ -1,6 +1,7 @@
 package main
 
 import (
+	"os"
 	"strings"
 	"time"
 
@@ -8,14 +9,17 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/cache"
 	"github.com/gofiber/fiber/v2/middleware/compress"
 	"github.com/gofiber/fiber/v2/middleware/etag"
+	expvarmw "github.com/gofiber/fiber/v2/middleware/expvar"
 	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/gofiber/fiber/v2/middleware/pprof"
 
-	biz "imageConverter.pcpl2lab.ovh/biz"
-	appLogger "imageConverter.pcpl2lab.ovh/utils/logger"
+	"easy-image-cdn.pcpl2lab.ovh/app/build"
+	biz "easy-image-cdn.pcpl2lab.ovh/biz"
+	appLogger "easy-image-cdn.pcpl2lab.ovh/utils/logger"
 
-	aApi "imageConverter.pcpl2lab.ovh/controllers/adminApis"
-	pApi "imageConverter.pcpl2lab.ovh/controllers/publicApis"
-	utils "imageConverter.pcpl2lab.ovh/controllers/utils"
+	aApi "easy-image-cdn.pcpl2lab.ovh/controllers/adminApis"
+	pApi "easy-image-cdn.pcpl2lab.ovh/controllers/publicApis"
+	utils "easy-image-cdn.pcpl2lab.ovh/controllers/utils"
 )
 
 func main() {
@@ -99,6 +103,28 @@ func main() {
 			appLogger.ErrorLogger.Fatalf("error in publicApp.Listen: %s", err)
 		}
 	}()
+
+	//App monitoring
+	if os.Getenv("EXPVAR_ENABLED") == "1" || os.Getenv("PPROF_ENABLED") == "1" {
+		appMonitoring := fiber.New(fiber.Config{
+			DisableStartupMessage: true,
+			ServerHeader:          "",
+		})
+		if os.Getenv("EXPVAR_ENABLED") == "1" {
+			appMonitoring.Use(expvarmw.New())
+		}
+		if os.Getenv("PPROF_ENABLED") == "1" {
+			appMonitoring.Use(pprof.New())
+		}
+		go func() {
+			appLogger.InfoLogger.Printf("App Monitoring started on 0.0.0.0:9125")
+			if err := appMonitoring.Listen(":9125"); err != nil {
+				appLogger.ErrorLogger.Fatalf("error in expvarHttp.Listen: %s", err)
+			}
+		}()
+	}
+
+	appLogger.InfoLogger.Printf("Started EasyImageCdn %s (Builded at %s)", build.Version, build.Time)
 
 	select {}
 }

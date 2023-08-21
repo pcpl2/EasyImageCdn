@@ -1,9 +1,15 @@
-# 0.3 (???)
-* Updated go version to 1.19
-* Updated fiber to 2.39.0
-* Updated go image to 0.1.0
+# 0.2.2 (21.08.2023)
+
+* Updated go version to 1.21
+* Updated fiber to 2.48.0
+* Updated go image to 0.11.0
+* Small fix for logs directory create
+* Added app version and build time in code
+* Added endpoint for monitoring expvar
+* Added endpoint for monitoring Pprof
 
 # 0.2.1 (18.10.2022)
+
 * Fixed logs path in container
 
 # 0.2.0 (18.10.2022)

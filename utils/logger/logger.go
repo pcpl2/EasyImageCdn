@@ -7,21 +7,18 @@ import (
 )
 
 var (
-	WarningLogger *log.Logger
-	InfoLogger    *log.Logger
-	ErrorLogger   *log.Logger
-	LoggerWritter io.Writer
+	logFlags                  = log.Ldate | log.Ltime
+	LoggerWritter io.Writer   = os.Stderr
+	WarningLogger *log.Logger = log.New(LoggerWritter, "WARNING: ", logFlags)
+	InfoLogger    *log.Logger = log.New(LoggerWritter, "INFO: ", logFlags)
+	ErrorLogger   *log.Logger = log.New(LoggerWritter, "ERROR: ", logFlags)
 )
 
 const logPath = "/var/log/eic"
 
 func StartLogger() {
-	LoggerWritter = os.Stderr
-	logFlags := log.Ldate | log.Ltime
-	ErrorLogger = log.New(LoggerWritter, "ERROR: ", logFlags)
-
 	if _, err := os.Stat(logPath); os.IsNotExist(err) {
-		errMkDir := os.Mkdir(logPath, 0666)
+		errMkDir := os.Mkdir(logPath, 0777)
 		if errMkDir != nil {
 			ErrorLogger.Println("Cannot create log's directory " + errMkDir.Error())
 		}

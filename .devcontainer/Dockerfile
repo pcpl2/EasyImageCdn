@@ -1,15 +1,7 @@
-FROM golang:alpine3.16
+FROM golang:1.21.0-alpine3.18
 
 RUN apk add --update --no-cache git zsh build-base openssh
-RUN go env -w GO111MODULE=off
-RUN go get -u golang.org/x/tools/gopls 2>&1
-RUN go get -u honnef.co/go/tools/... 2>&1
-RUN go get -u golang.org/x/lint/golint 2>&1
-RUN go get -u github.com/uudashr/gopkgs/v2/cmd/gopkgs 2>&1
-RUN go get -u golang.org/x/tools/gopls 2>&1
-RUN go get -u github.com/go-delve/delve/cmd/dlv 2>&1
-
-RUN sh -c "$(wget -O- https://github.com/deluan/zsh-in-docker/releases/download/v1.1.2/zsh-in-docker.sh)" -- \
+RUN sh -c "$(wget -nv -O- https://github.com/deluan/zsh-in-docker/releases/download/v1.1.2/zsh-in-docker.sh)" -- \
     -t robbyrussell \
     -p git \
     -p copyfile \
@@ -18,3 +10,7 @@ RUN sh -c "$(wget -O- https://github.com/deluan/zsh-in-docker/releases/download/
     -p golang
 
 RUN go env -w GO111MODULE=auto
+RUN go env -w CGO_ENABLED=1
+ENV CGO_ENABLED=1
+RUN go install github.com/go-delve/delve/cmd/dlv@latest
+RUN go install github.com/ramya-rao-a/go-outline@v0.0.0-20210608161538-9736a4bde949 

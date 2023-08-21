@@ -8,8 +8,8 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 
-	biz "imageConverter.pcpl2lab.ovh/biz"
-	appLogger "imageConverter.pcpl2lab.ovh/utils/logger"
+	biz "easy-image-cdn.pcpl2lab.ovh/biz"
+	appLogger "easy-image-cdn.pcpl2lab.ovh/utils/logger"
 )
 
 func GetImage(ctx *fiber.Ctx, id string, fileName string) error {
