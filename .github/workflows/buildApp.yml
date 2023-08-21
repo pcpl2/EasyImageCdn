@@ -13,13 +13,12 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3.1.0
+      uses: actions/checkout@v3.5.3
 
     - name: Set up Go
-      uses: actions/setup-go@v3.3.1
+      uses: actions/setup-go@v4.1.0
       with:
         go-version-file: go.mod
-        cache: true
         cache-dependency-path: go.sum
 
     - name: Update apt
@@ -42,21 +41,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      -  name: Checkout repository 
-         uses: actions/checkout@v3.1.0
+      - name: Checkout repository
+        uses: actions/checkout@v3.5.3
 
       - name: Set up QEMU
         id: qemu
-        uses: docker/setup-qemu-action@v2.1.0
+        uses: docker/setup-qemu-action@v2.2.0
         with:
           image: tonistiigi/binfmt:qemu-v7.0.0-28
           platforms: all
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2.2.1
+        uses: docker/setup-buildx-action@v2.9.1
 
       - name: buildDocker
-        uses: docker/build-push-action@v3.2.0
+        uses: docker/build-push-action@v4.1.1
         with:
           context: .
           push: false
