@@ -9,7 +9,7 @@ import (
 	_ "image/jpeg"
 	png "image/png"
 
-	"github.com/chai2010/webp"
+	"github.com/pcpl2/go-webp"
 	"golang.org/x/image/draw"
 
 	models "easy-image-cdn.pcpl2lab.ovh/models"

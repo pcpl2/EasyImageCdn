@@ -1,3 +1,8 @@
+# 0.2.3 (27.02.2024)
+
+* Updated fiber to 2.52.1
+* Updated libwebp to 1.1.0
+
 # 0.2.2 (21.08.2023)
 
 * Updated go version to 1.21
