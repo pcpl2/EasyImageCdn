@@ -15,8 +15,8 @@ github.com/mattn/go-isatty v0.0.20 h1:xfD0iDuEKnDkl03q4limB+vH+GxLEtL/jb4xVJSWWE
 github.com/mattn/go-isatty v0.0.20/go.mod h1:W+V8PltTTMOvKvAeJH7IuucS94S2C6jfK/D7dTCTo3Y=
 github.com/mattn/go-runewidth v0.0.15 h1:UNAjwbU9l54TA3KzvqLGxwWjHmMgBUVhBiTjelZgg3U=
 github.com/mattn/go-runewidth v0.0.15/go.mod h1:Jdepj2loyihRzMpdS35Xk/zdY8IAYHsh153qUoGf23w=
-github.com/pcpl2/go-webp v0.0.1-beta3 h1:AHNIBWvx5GvwDB2l07wWiOXuU4DYePOWIg6YkBvwGLA=
-github.com/pcpl2/go-webp v0.0.1-beta3/go.mod h1:ggV3YXOJZLnl2pcYsCgBdcwq6DxrEw5oKKPUBWkLwME=
+github.com/pcpl2/go-webp v0.0.1 h1:JidBFbqo+irRNZtVbp1Rhgg1XIiNey/xvXV9kd5y98Y=
+github.com/pcpl2/go-webp v0.0.1/go.mod h1:ggV3YXOJZLnl2pcYsCgBdcwq6DxrEw5oKKPUBWkLwME=
 github.com/philhofer/fwd v1.1.2 h1:bnDivRJ1EWPjUIRXV5KfORO897HTbpFAQddBdE8t7Gw=
 github.com/philhofer/fwd v1.1.2/go.mod h1:qkPdfjR2SIEbspLqpe1tO4n5yICnr2DY7mqEx2tUTP0=
 github.com/rivo/uniseg v0.2.0/go.mod h1:J6wj4VEh+S6ZtnVlnTBMWIodfgj8LQOQFoIToxlJtxc=
