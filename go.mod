@@ -6,7 +6,7 @@ require (
 	github.com/gofiber/fiber/v2 v2.52.1
 	github.com/joho/godotenv v1.5.1
 	github.com/pcpl2/go-webp v0.0.1
-	golang.org/x/image v0.15.0
+	golang.org/x/image v0.18.0
 )
 
 require (
