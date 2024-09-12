@@ -1,6 +1,6 @@
 module easy-image-cdn.pcpl2lab.ovh
 
-go 1.21
+go 1.23
 
 require (
 	github.com/gofiber/fiber/v2 v2.52.1

@@ -27,13 +27,13 @@
                 "go.buildTags": "",
                 "[go]": {
                     "editor.codeActionsOnSave": {
-                        "source.organizeImports": true
+                        "source.organizeImports": "explicit"
                     }
                 },
                 "gopls": {
                     "usePlaceholders": false,
-                    "staticcheck": true,
-                    "vulncheck": "Imports"
+                    "staticcheck": true //,
+                   // "vulncheck": "Imports"
                 }
             },
             "extensions": [
@@ -41,14 +41,16 @@
                 "eamodio.gitlens", // IDE Git information
                 "vscode-icons-team.vscode-icons", // Better file extension icons
                 "davidanson.vscode-markdownlint",
-                "IBM.output-colorizer"
+                "IBM.output-colorizer",
+                "humao.rest-client",
+                "pflannery.vscode-versionlens"
             ]
         }
     },
     // Comment out connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
     //"remoteUser": "vscode",
     //"postCreateCommand": "go mod download",
-    "postCreateCommand": "go mod download && go mod tidy && go get -u golang.org/x/tools/gopls@latest"
+    "postCreateCommand": "go mod download && go mod tidy && go install golang.org/x/tools/gopls@v0.16.0"
     // "runArgs": [
     //     "-u",
     //     "vscode",
