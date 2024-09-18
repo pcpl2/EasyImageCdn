@@ -5,14 +5,41 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Launch Package",
-            "type": "go",
+            "type": "lldb",
             "request": "launch",
-            "mode": "auto",
-            "env": {
-                "CGO_ENABLED": "1"
+            "name": "Debug executable 'EasyImageCdn'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=EasyImageCdn",
+                    "--package=EasyImageCdn"
+                ],
+                "filter": {
+                    "name": "EasyImageCdn",
+                    "kind": "bin"
+                }
             },
-            "program": "${workspaceFolder}"
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'EasyImageCdn'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=EasyImageCdn",
+                    "--package=EasyImageCdn"
+                ],
+                "filter": {
+                    "name": "EasyImageCdn",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
         }
     ]
 }
