@@ -10,6 +10,7 @@ use base64::prelude::BASE64_STANDARD;
 use base64::Engine;
 use futures::future;
 use image::ImageReader;
+use xxhash_rust::const_xxh3::xxh3_64 as const_xxh3;
 
 mod models;
 
@@ -24,7 +25,9 @@ async fn post_new_image(form: web::Json<models::rest_models::ImagePayload>) -> H
         .decode();
     let img3 = img2.unwrap().resize(100, 100, image::imageops::FilterType::Gaussian);
     img3.save_with_format("converted.avif", image::ImageFormat::Avif);
-    HttpResponse::Ok().body(format!("username: {}", form.image))
+
+    let ID_HASH = const_xxh3(form.id.as_bytes());
+    HttpResponse::Ok().body(format!("username: {:x}", ID_HASH))
 }
 
 #[post("/v1/newImageMP")]
