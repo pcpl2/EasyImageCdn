@@ -11,29 +11,45 @@ use base64::Engine;
 use futures::future;
 use image::ImageReader;
 use xxhash_rust::const_xxh3::xxh3_64 as const_xxh3;
+use tokio::sync::mpsc;
+use std::sync::Arc;
 
 mod models;
 
+fn convert_image(image: Vec<u8>) -> u64 {
+    let cursor = Cursor::new(image);
+    let img2 = ImageReader::new(cursor.clone())
+        .with_guessed_format()
+        .unwrap()
+        .decode();
+    let img3 = img2
+        .unwrap()
+        .resize(100, 100, image::imageops::FilterType::Gaussian);
+    let _ = img3.save_with_format("converted.avif", image::ImageFormat::Avif);
+
+    let id_hash = const_xxh3(cursor.get_ref());
+    return id_hash;
+}
+
 #[post("/v1/newImage")]
 async fn post_new_image(form: web::Json<models::rest_models::ImagePayload>) -> HttpResponse {
-    let imageDecoded = BASE64_STANDARD.decode(form.image.clone());
-    if imageDecoded.is_err() {
+    let image_decoded = BASE64_STANDARD.decode(form.image.clone());
+    if image_decoded.is_err() {
         return HttpResponse::BadRequest().body("Cannot decode image");
     }
-    let img2 = ImageReader::new(Cursor::new(imageDecoded.unwrap()))
-        .with_guessed_format().unwrap()
-        .decode();
-    let img3 = img2.unwrap().resize(100, 100, image::imageops::FilterType::Gaussian);
-    img3.save_with_format("converted.avif", image::ImageFormat::Avif);
 
-    let ID_HASH = const_xxh3(form.id.as_bytes());
-    HttpResponse::Ok().body(format!("username: {:x}", ID_HASH))
+    let id_hash = convert_image(image_decoded.unwrap());
+    //TODO Save id hash to cache
+
+    HttpResponse::Ok().body(format!("username: {:x}", id_hash))
 }
 
 #[post("/v1/newImageMP")]
 pub async fn post_image_multipart(
     MultipartForm(form): MultipartForm<models::rest_models::ImageMultipartPayload>,
 ) -> impl Responder {
+    let file = form.files.first().unwrap();
+    //TTODO REad
     format!(
         "Uploaded file {}",
         form.files.first().unwrap().file_name.as_ref().unwrap()
@@ -54,6 +70,11 @@ async fn images(req: HttpRequest) -> Result<fs::NamedFile, Error> {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    tracing_subscriber::fmt::init();
+
+    //let (job_sender, job_receiver) = mpsc::channel::<models::ImageJob>(100);
+
+
     let admin_api = HttpServer::new(|| {
         App::new()
             .wrap(Logger::default())
