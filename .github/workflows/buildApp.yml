@@ -13,10 +13,10 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4.1.7
+      uses: actions/checkout@v4.2.2
 
     - name: Set up Go
-      uses: actions/setup-go@v5.0.2
+      uses: actions/setup-go@v5.4.0
       with:
         go-version-file: go.mod
         cache-dependency-path: go.sum
@@ -38,28 +38,35 @@ jobs:
 
   build_docker:
     name: Build docker version
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+        - os: ubuntu-24.04
+          platforms: linux/amd64
+        - os: ubuntu-24.04-arm
+          platforms: linux/arm64
 
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4.1.7
+        uses: actions/checkout@v4.2.2
 
       - name: Set up QEMU
         id: qemu
-        uses: docker/setup-qemu-action@v3.2.0
+        uses: docker/setup-qemu-action@v3.6.0
         with:
           image: tonistiigi/binfmt:qemu-v8.1.5
           platforms: all
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3.6.1
+        uses: docker/setup-buildx-action@v3.10.0
 
       - name: buildDocker
-        uses: docker/build-push-action@v6.7.0
+        uses: docker/build-push-action@v6.15.0
         with:
           context: .
           push: false
-          platforms: linux/amd64, linux/arm64
+          platforms: ${{ matrix.platforms }}
           tags:  pcpl2/easy_image_cdn:latest,ghcr.io/pcpl2/easy_image_cdn:latest
           build-args: |
             App_Version=latest
