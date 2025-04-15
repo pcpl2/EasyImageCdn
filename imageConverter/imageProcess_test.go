@@ -12,7 +12,7 @@ import (
 func TestOpenImage(t *testing.T) {
 	_, err := openFile("../testImages/350x150.png")
 	if err != nil {
-		t.Fatalf(err.Error())
+		t.Fatalf("%s", err.Error())
 	}
 }
 
@@ -28,7 +28,7 @@ func TestConvertImageTo64X64(t *testing.T) {
 
 	checksum, err := calcuateCheckSumForFile("../testImages/64x64")
 	if err != nil {
-		t.Fatalf(err.Error())
+		t.Fatalf("%s", err.Error())
 	}
 
 	if *checksum != "75f2b66fc23eae1022f73979c76c6f4c3bc1f46f920b3a8cbfab48f68221e991" {
@@ -50,7 +50,7 @@ func TestConvertImageTo64X64WebP(t *testing.T) {
 
 	checksum, err := calcuateCheckSumForFile("../testImages/64x64.webp")
 	if err != nil {
-		t.Fatalf(err.Error())
+		t.Fatalf("%s", err.Error())
 	}
 
 	if *checksum != "2cb03ec0c8d424fad03a355a930efe7548f1f6b1f729cccabbf0ddc676025eeb" {
