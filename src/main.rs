@@ -1,4 +1,4 @@
-use actix_web::{middleware::Logger, web, App, HttpServer};
+use actix_web::{middleware::{self, Logger}, web, App, HttpServer};
 use dashmap::DashMap;
 use futures_util::future::try_join;
 use std::sync::Arc;
@@ -58,7 +58,9 @@ async fn main() -> std::io::Result<()> {
     .run();
 
     let image_server = HttpServer::new(move || {
-        App::new().route("/{image_id}", web::get().to(handlers::get_file))
+        App::new()
+        .route("/{image_id}", web::get().to(handlers::get_file))
+        .route("/{image_id}/", web::get().to(handlers::get_file))
         .route(
               "/{image_id}/{resolution}",
              web::get().to(handlers::get_file),

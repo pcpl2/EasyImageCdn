@@ -18,6 +18,7 @@ dependencies = [
  "derive_more 2.0.1",
  "futures-util",
  "image",
+ "mime",
  "serde",
  "serde_json",
  "tokio",

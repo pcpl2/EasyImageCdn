@@ -5,6 +5,8 @@ use actix_web::{web, Error as ActixError, HttpRequest, HttpResponse, Responder};
 use actix_web::{Result, error::ErrorNotFound};
 use base64::{engine::general_purpose::STANDARD as base64_standard, Engine as _};
 use futures_util::stream::TryStreamExt;
+use mime::Mime;
+use std::str::FromStr;
 use std::time::Duration;
 use uuid::Uuid;
 
@@ -34,7 +36,7 @@ pub async fn new_image_json(
         image_id: payload.id.clone(),
         image_data,
         target_resolutions: vec![(800, 600), (1024, 768)],
-        target_formats: vec![TargetFormat::WebP, TargetFormat::Avif],
+        target_formats: vec![TargetFormat::WebP, TargetFormat::Avif, TargetFormat::Jpeg],
     };
 
     state.job_statuses.insert(
@@ -95,7 +97,7 @@ pub async fn new_image_multipart(
         image_id: image_id.clone(),
         image_data,
         target_resolutions: vec![(800, 600), (1024, 768)],
-        target_formats: vec![TargetFormat::WebP, TargetFormat::Avif],
+        target_formats: vec![TargetFormat::WebP, TargetFormat::Avif, TargetFormat::Jpeg],
     };
 
     state.job_statuses.insert(
@@ -338,7 +340,7 @@ pub async fn sse_job_status(
         .streaming(body))
 }
 
-fn get_best_image_extension(accept: &str) -> &'static str {
+fn get_best_image_extension(accept: &str) -> (&'static str, &'static str) {
     let preferred_formats = ["image/avif", "image/webp", "image/jpeg"];
     let accept_parts: Vec<&str> = accept
         .split(',')
@@ -347,14 +349,14 @@ fn get_best_image_extension(accept: &str) -> &'static str {
     for &preferred in &preferred_formats {
         if accept_parts.contains(&preferred) {
             return match preferred {
-                "image/avif" => "avif",
-                "image/webp" => "webp",
-                "image/jpeg" => "jpg",
-                _ => "jpg",
+                "image/avif" => ("avif", "image/avif"),
+                "image/webp" => ("webp", "image/webp"),
+                "image/jpeg" => ("jpg", "image/jpeg"),
+                _ => ("jpg", "image/jpeg"),
             };
         }
     }
-    "jpg"
+    ("jpg", "image/jpeg")
 }
 
 fn parse_resolution(resolution_str: &str) -> Option<(u32, u32)> {
@@ -377,6 +379,8 @@ fn parse_resolution(resolution_str: &str) -> Option<(u32, u32)> {
 
 pub async fn get_file(req: HttpRequest) -> Result<fs::NamedFile, ActixError> {
     //TODO Get from cache
+    //TODO Validate referer
+    //TODO Force format
 
     let image_id = req.match_info().query("image_id");
     let resolution_str = req.match_info().query("resolution");
@@ -387,18 +391,16 @@ pub async fn get_file(req: HttpRequest) -> Result<fs::NamedFile, ActixError> {
     let selected_ext = get_best_image_extension(accept);
 
     let name = match parse_resolution(resolution_str) {
-        Some((x, y)) => format!("{}_{}x{}.{}", image_id, x, y, selected_ext),
-        None => format!("{}_original.{}", image_id, selected_ext),
+        Some((x, y)) => format!("{}_{}x{}.{}", image_id, x, y, selected_ext.0),
+        None => format!("{}_original.{}", image_id, selected_ext.0),
     };
 
-    let base_path = generate_output_path(image_id).map_err(ErrorNotFound)?; // <- używamy `?`
+    let base_path = generate_output_path(image_id).map_err(ErrorNotFound)?;
     let output_path = base_path.join(name);
 
     let file = fs::NamedFile::open(&output_path).map_err(|_| ErrorNotFound("File not found"))?;
-    Ok(file
+    Ok(file.use_etag(true)
         .use_last_modified(true)
-        .set_content_disposition(ContentDisposition {
-            disposition: DispositionType::Attachment,
-            parameters: vec![],
-        }))
+        .set_content_type(Mime::from_str(selected_ext.1).unwrap())
+        .disable_content_disposition())
 }
