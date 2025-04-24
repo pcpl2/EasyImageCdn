@@ -10,5 +10,6 @@ __debug_bin*
 # Added by cargo
 
 /target
+output/
 
 .DS_Store
