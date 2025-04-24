@@ -1,11 +1,11 @@
 use actix_files as fs;
 use actix_multipart::Multipart;
-use actix_web::http::header::{ContentDisposition, DispositionType};
 use actix_web::{web, Error as ActixError, HttpRequest, HttpResponse, Responder};
 use actix_web::{Result, error::ErrorNotFound};
 use base64::{engine::general_purpose::STANDARD as base64_standard, Engine as _};
 use futures_util::stream::TryStreamExt;
 use mime::Mime;
+use qstring::QString;
 use std::str::FromStr;
 use std::time::Duration;
 use uuid::Uuid;
@@ -340,8 +340,16 @@ pub async fn sse_job_status(
         .streaming(body))
 }
 
-fn get_best_image_extension(accept: &str) -> (&'static str, &'static str) {
+fn get_best_image_extension(accept: &str, force: &str) -> (&'static str, &'static str) {
     let preferred_formats = ["image/avif", "image/webp", "image/jpeg"];
+    if(force != "") {
+        return match force {
+            "avif" => ("avif", "image/avif"),
+            "webp" => ("webp", "image/webp"),
+            "jpeg" => ("jpg", "image/jpeg"),
+            _ => ("jpg", "image/jpeg"),
+        };
+    }
     let accept_parts: Vec<&str> = accept
         .split(',')
         .map(|part| part.trim().split(';').next().unwrap_or(""))
@@ -377,18 +385,19 @@ fn parse_resolution(resolution_str: &str) -> Option<(u32, u32)> {
 }
 
 
-pub async fn get_file(req: HttpRequest) -> Result<fs::NamedFile, ActixError> {
+pub async fn get_file(req: HttpRequest) -> Result<HttpResponse, ActixError> {
     //TODO Get from cache
     //TODO Validate referer
-    //TODO Force format
-
+    let qs = QString::from(req.query_string());
     let image_id = req.match_info().query("image_id");
     let resolution_str = req.match_info().query("resolution");
     let accept = req.headers().get("accept")
         .and_then(|val| val.to_str().ok())
         .unwrap_or("");
+    let force_type = qs.get("extension").unwrap_or_default();
+    let selected_ext = get_best_image_extension(accept, force_type);
 
-    let selected_ext = get_best_image_extension(accept);
+    //let cache_key = format!("{}_{}.{}", image_id, resolution_str, selected_ext.0);
 
     let name = match parse_resolution(resolution_str) {
         Some((x, y)) => format!("{}_{}x{}.{}", image_id, x, y, selected_ext.0),
@@ -399,8 +408,10 @@ pub async fn get_file(req: HttpRequest) -> Result<fs::NamedFile, ActixError> {
     let output_path = base_path.join(name);
 
     let file = fs::NamedFile::open(&output_path).map_err(|_| ErrorNotFound("File not found"))?;
-    Ok(file.use_etag(true)
+
+    let response = file.use_etag(true)
         .use_last_modified(true)
         .set_content_type(Mime::from_str(selected_ext.1).unwrap())
-        .disable_content_disposition())
+        .disable_content_disposition().into_response(&req);
+    Ok(response)
 }
