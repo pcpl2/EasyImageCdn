@@ -1,30 +1,32 @@
-FROM golang:1.23.1-bullseye AS builder
+FROM rust:1.86.0-alpine AS builder
 
 ARG App_Version
 
-RUN apt-get update && apt-get --no-install-recommends -y install musl musl-dev musl-tools
+RUN apk add --no-cache musl-dev openssl-dev openssl-libs-static pkgconf git
+# Set `SYSROOT` to a dummy path (default is /usr) because pkg-config-rs *always*
+# links those located in that path dynamically but we want static linking, c.f.
+# https://github.com/rust-lang/pkg-config-rs/blob/54325785816695df031cef3b26b6a9a203bbc01b/src/lib.rs#L613
+ENV SYSROOT=/dummy
 
 WORKDIR /build
 
 COPY . .
 
-RUN go env -w CGO_ENABLED=1 GOOS=linux CC=/usr/bin/musl-gcc
-RUN go get -d -v
-RUN go build -v -ldflags="-linkmode external -extldflags=-static -w -s -X 'easy-image-cdn.pcpl2lab.ovh/app/build.Version=${App_Version}' -X 'easy-image-cdn.pcpl2lab.ovh/app/build.Time=$(date)'" -o imageCdn .
-RUN go test -v ./imageConverter
+RUN cargo build --bins --release
 
 RUN mkdir -p images
 RUN touch images/dontRemoveMe.txt
 RUN mkdir -p logs
 RUN touch logs/dontRemoveMe.txt
 
-FROM busybox:1.36.1 AS builder-user
+FROM busybox:1.37.0 AS builder-user
 
 RUN addgroup -g 10002 appUser && \
     adduser -D -u 10003 -G appUser appUser
 
-FROM gcr.io/distroless/static-debian11
-COPY --from=builder --chown=10003:10002 /build/imageCdn /
+FROM scratch
+
+COPY --from=builder --chown=10003:10002 /build/target/release/EasyImageCdn /
 COPY --from=builder-user /etc/passwd /etc/passwd
 COPY --from=builder --chown=10003:10002 /build/logs /var/log/eic/
 COPY --from=builder --chown=10003:10002 /build/images /var/lib/images/
@@ -43,4 +45,4 @@ EXPOSE 9555
 EXPOSE 9125
 
 USER appUser
-ENTRYPOINT ["/imageCdn"]
+ENTRYPOINT ["/EasyImageCdn"]
