@@ -21,7 +21,6 @@ use crate::errors::AppError;
 use crate::image_processing::generate_output_path;
 use crate::models::{
     AppState, ImageIdQuery, ImageJob, JobQueuedResponse, JobState, JobStatus, NewImageRequest,
-    TargetFormat,
 };
 
 pub async fn new_image_json(
@@ -35,8 +34,8 @@ pub async fn new_image_json(
         job_id,
         image_id: payload.id.clone(),
         image_data,
-        target_resolutions: vec![(800, 600), (1024, 768)],
-        target_formats: vec![TargetFormat::WebP, TargetFormat::Avif, TargetFormat::Jpeg],
+        target_resolutions: state.config.convert_to_res.clone(),
+        target_formats: state.config.target_formats.clone(),
     };
 
     state.job_statuses.insert(
@@ -96,8 +95,8 @@ pub async fn new_image_multipart(
         job_id,
         image_id: image_id.clone(),
         image_data,
-        target_resolutions: vec![(800, 600), (1024, 768)],
-        target_formats: vec![TargetFormat::WebP, TargetFormat::Avif, TargetFormat::Jpeg],
+        target_resolutions: state.config.convert_to_res.clone(),
+        target_formats: state.config.target_formats.clone(),
     };
 
     state.job_statuses.insert(
@@ -342,7 +341,7 @@ pub async fn sse_job_status(
 
 fn get_best_image_extension(accept: &str, force: &str) -> (&'static str, &'static str) {
     let preferred_formats = ["image/avif", "image/webp", "image/jpeg"];
-    if(force != "") {
+    if force != "" {
         return match force {
             "avif" => ("avif", "image/avif"),
             "webp" => ("webp", "image/webp"),

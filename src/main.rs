@@ -1,10 +1,12 @@
-use actix_web::{middleware::{self, Logger}, web, App, HttpServer};
+use actix_web::{middleware::Logger, web, App, HttpServer};
+use config::read_env;
 use dashmap::DashMap;
 use futures_util::future::try_join;
 use std::sync::Arc;
 use tokio::sync::mpsc;
 use uuid::Uuid;
 
+mod config;
 mod errors;
 mod handlers;
 mod image_processing;
@@ -33,11 +35,13 @@ async fn main() -> std::io::Result<()> {
     let app_state = web::Data::new(AppState {
         job_sender: job_sender.clone(),
         job_statuses: job_statuses.clone(),
+        config: Arc::new(read_env()),
     });
 
     let main_server = HttpServer::new(move || {
         App::new()
             .app_data(app_state.clone())
+            .app_data(web::PayloadConfig::new((app_state.config.max_file_size.clone() as usize) * 1024 * 1024))
             .wrap(Logger::default())
             .service(
                 web::scope("/v1")

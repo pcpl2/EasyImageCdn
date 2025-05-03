@@ -33,6 +33,15 @@ impl TargetFormat {
             TargetFormat::Jpeg => "jpg"
         }
     }
+
+    pub fn from_str(s: &str) -> Result<Self, String> {
+        match s.to_lowercase().as_str() {
+            "webp" => Ok(TargetFormat::WebP),
+            "avif" => Ok(TargetFormat::Avif),
+            "jpg" | "jpeg" => Ok(TargetFormat::Jpeg),
+            _ => Err(format!("Invalid target format: {}", s)),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -70,5 +79,14 @@ pub struct JobQueuedResponse {
 pub struct AppState {
     pub job_sender: mpsc::Sender<ImageJob>,
     pub job_statuses: Arc<DashMap<Uuid, JobState>>,
-    // pub config: Arc<AppConfig>,
+    pub config: Arc<Config>,
+}
+
+#[derive(Debug)]
+pub struct Config {
+    pub api_key: String,
+    pub api_key_header: String,
+    pub convert_to_res: Vec<(u32, u32)>,
+    pub max_file_size: u32,
+    pub target_formats: Vec<TargetFormat>,
 }
