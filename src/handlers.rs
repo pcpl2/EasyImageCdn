@@ -6,6 +6,7 @@ use base64::{engine::general_purpose::STANDARD as base64_standard, Engine as _};
 use futures_util::stream::TryStreamExt;
 use mime::Mime;
 use qstring::QString;
+use std::path::Path;
 use std::str::FromStr;
 use std::sync::Arc;
 use std::time::Duration;
@@ -35,6 +36,28 @@ fn verify_apikey(req: &HttpRequest, config: Arc<Config>) -> Result<(), HttpRespo
     Err(HttpResponse::BadRequest().body("Missing API Key"))
 }
 
+pub fn escape_file_identifier(identifier: &str) -> Option<String> {
+    if identifier.is_empty() {
+        return None;
+    }
+
+    let sanitized: String = identifier
+        .chars()
+        .filter(|&c| c.is_alphanumeric() || c == '-' || c == '_')
+        .collect();
+
+    if sanitized.is_empty() {
+        return None;
+    }
+
+    let path = Path::new(&sanitized);
+    if path.components().any(|comp| matches!(comp, std::path::Component::ParentDir)) {
+        return None;
+    }
+
+    Some(sanitized)
+}
+
 pub async fn new_image_json(
     req: HttpRequest,
     state: web::Data<AppState>,
@@ -47,9 +70,15 @@ pub async fn new_image_json(
     tracing::info!("Received new image request via JSON for id: {}", payload.id);
     let image_data = base64_standard.decode(&payload.image)?;
     let job_id = Uuid::new_v4();
+
+    let image_id = escape_file_identifier(&payload.id);
+    if image_id.is_none() {
+        return Ok(HttpResponse::BadRequest().body("Invalid image id"))
+    }
+
     let job = ImageJob {
         job_id,
-        image_id: payload.id.clone(),
+        image_id: image_id.unwrap(),
         image_data,
         target_resolutions: state.config.convert_to_res.clone(),
         target_formats: state.config.target_formats.clone(),
@@ -81,14 +110,17 @@ pub async fn new_image_multipart(
     if let Err(error_response) = verify_apikey(&req, state.config.clone()) {
         return Ok(error_response);
     }
+    let mut image_data: Option<Vec<u8>> = None;
 
-    let image_id = query.into_inner().image_id;
+    let image_id = escape_file_identifier(query.into_inner().image_id.as_str());
+    if image_id.is_none() {
+        return Ok(HttpResponse::BadRequest().body("Invalid image id"))
+    }
+
     tracing::info!(
         "Received new image request via Multipart for id: {}",
-        image_id
+        image_id.clone().unwrap()
     );
-    let mut image_data: Option<Vec<u8>> = None;
-    //let mut original_filename: Option<String> = None;
 
     while let Some(mut field) = payload.try_next().await? {
         let disposition_opt = field.content_disposition();
@@ -97,7 +129,7 @@ pub async fn new_image_multipart(
             .and_then(|d| d.get_name())
             .unwrap_or("");
         if field_name == "imageFile" {
-            //original_filename = disposition_opt.as_ref().and_then(|d| d.get_filename()).map(String::from);
+
             let mut field_data = Vec::new();
             while let Some(chunk) = field.try_next().await? {
                 field_data.extend_from_slice(&chunk);
@@ -115,7 +147,7 @@ pub async fn new_image_multipart(
     let job_id = Uuid::new_v4();
     let job = ImageJob {
         job_id,
-        image_id: image_id.clone(),
+        image_id: image_id.clone().unwrap(),
         image_data,
         target_resolutions: state.config.convert_to_res.clone(),
         target_formats: state.config.target_formats.clone(),
@@ -130,10 +162,10 @@ pub async fn new_image_multipart(
     // -----------------------------------------
 
     state.job_sender.send(job).await?;
-    tracing::info!("Job {} queued for image id {}", job_id, image_id);
+    tracing::info!("Job {} queued for image id {}", job_id, image_id.clone().unwrap());
     Ok(HttpResponse::Accepted().json(JobQueuedResponse {
         job_id,
-        image_id,
+        image_id: image_id.unwrap(),
         status: "Queued".to_string(),
     }))
 }
@@ -161,8 +193,7 @@ pub async fn get_job_status(
             Err(AppError::BadRequest(format!(
                 "Job with id {} not found",
                 job_id
-            ))) // Lub zwróć 404
-                // Alternatywnie: Ok(HttpResponse::NotFound().json(serde_json::json!({"error": "Job not found"})))
+            )))
         }
     }
 }
@@ -419,12 +450,14 @@ fn parse_resolution(resolution_str: &str) -> Option<(u32, u32)> {
     Some((x, y))
 }
 
-
 pub async fn get_file(req: HttpRequest) -> Result<HttpResponse, ActixError> {
     //TODO Get from cache
     //TODO Validate referer
     let qs = QString::from(req.query_string());
-    let image_id = req.match_info().query("image_id");
+    let image_id = escape_file_identifier(req.match_info().query("image_id"));
+    if image_id.is_none() {
+        return Ok(HttpResponse::BadRequest().body("Invalid image id"))
+    }
     let resolution_str = req.match_info().query("resolution");
     let accept = req.headers().get("accept")
         .and_then(|val| val.to_str().ok())
@@ -435,12 +468,17 @@ pub async fn get_file(req: HttpRequest) -> Result<HttpResponse, ActixError> {
     //let cache_key = format!("{}_{}.{}", image_id, resolution_str, selected_ext.0);
 
     let name = match parse_resolution(resolution_str) {
-        Some((x, y)) => format!("{}_{}x{}.{}", image_id, x, y, selected_ext.0),
-        None => format!("{}_orginal.{}", image_id, selected_ext.0),
+        Some((x, y)) => format!("{}_{}x{}.{}", image_id.clone().unwrap(), x, y, selected_ext.0),
+        None => format!("{}_orginal.{}", image_id.clone().unwrap(), selected_ext.0),
     };
 
-    let base_path = generate_output_path(image_id).map_err(ErrorNotFound)?;
+    let base_path = generate_output_path(image_id.clone().unwrap().as_str()).map_err(ErrorNotFound)?;
     let output_path = base_path.join(name);
+
+    tracing::info!(
+        "Get file: {:?}",
+        output_path,
+    );
 
     let file = fs::NamedFile::open(&output_path).map_err(|_| ErrorNotFound("File not found"))?;
 
