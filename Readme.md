@@ -7,6 +7,8 @@ Application to create a simple cdn server for images.
 
 This application automatically converts the uploaded image to webp format and to all resolutions defined in the configuration.
 
+### Warning! The version on this branch is experimental and does not have all functionalities implemented.
+
 ## How to use
 
 ```sh
