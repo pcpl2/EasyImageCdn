@@ -1,6 +1,7 @@
 # EasyImageCdn
 
-[![Build](https://github.com/pcpl2/EasyImageCdn/actions/workflows/buildApp.yml/badge.svg)](https://github.com/pcpl2/EasyImageCdn/actions/workflows/buildApp.yml) ![Docker Image Size with architecture (latest by date/latest semver)](https://img.shields.io/docker/image-size/pcpl2/easy_image_cdn?arch=amd64&label=Image%20size%20amd64&sort=date) ![Docker Image Size with architecture (latest by date/latest semver)](https://img.shields.io/docker/image-size/pcpl2/easy_image_cdn?arch=arm64&label=Image%20size%20arm64&sort=date) ![Docker Pulls](https://img.shields.io/docker/pulls/pcpl2/easy_image_cdn) ![GitHub](https://img.shields.io/github/license/pcpl2/EasyImageCdn) ![Docker Image Version (tag latest semver)](https://img.shields.io/docker/v/pcpl2/easy_image_cdn/0.2.3) ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/pcpl2/EasyImageCdn) [![CodeFactor](https://www.codefactor.io/repository/github/pcpl2/easyimagecdn/badge)](https://www.codefactor.io/repository/github/pcpl2/easyimagecdn)
+[![Build](https://github.com/pcpl2/EasyImageCdn/actions/workflows/buildApp.yml/badge.svg)](https://github.com/pcpl2/EasyImageCdn/actions/workflows/buildApp.yml) ![Docker Image Size with architecture (latest by date/latest semver)](https://img.shields.io/docker/image-size/pcpl2/easy_image_cdn?arch=amd64&label=Image%20size%20amd64&sort=date) ![Docker Image Size with architecture (latest by date/latest semver)](https://img.shields.io/docker/image-size/pcpl2/easy_image_cdn?arch=arm64&label=Image%20size%20arm64&sort=date) ![Docker Pulls](https://img.shields.io/docker/pulls/pcpl2/easy_image_cdn) ![GitHub](https://img.shields.io/github/license/pcpl2/EasyImageCdn) ![Docker Image Version (tag latest semver)](https://img.shields.io/docker/v/pcpl2/easy_image_cdn/0.2.3) [![CodeFactor](https://www.codefactor.io/repository/github/pcpl2/easyimagecdn/badge)](https://www.codefactor.io/repository/github/pcpl2/easyimagecdn) ![GitHub Sponsors](https://img.shields.io/github/sponsors/pcpl2)
+
 
 Application to create a simple cdn server for images.
 
@@ -39,11 +40,18 @@ version: '3.9'
       - './logs:/var/log/eic'
 ```
 
-### Endpoints
+## Endpoints
+#### Admin:
+#### POST /v1/newImage
+For send and update image with using json payload and image bytes in base64
 
-#### Admin
+**Parameters**
 
-`http://localhost:9324/v1/newImage` -> For send and update Image
+|          Name | Required |  Type   | Description                                                                                                                                                           |
+| -------------:|:--------:|:-------:| --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|     `id` | required | string  | Image identificator.                                                                     |
+|     `image` | required | string  | Image bytes encoded in base64                                                                     |
+
 Payload:
 
 ```json
@@ -71,6 +79,7 @@ API_KEY=00000000-0000-0000-0000-000000000000
 API_KEY_HEADER=key
 CONVERT_TO_RES=1024x720,800x600
 MAX_FILE_SIZE=10
+TARGET_FORMATS=jpg,webp,avif
 ```
 
 ### Config values description
@@ -80,10 +89,9 @@ MAX_FILE_SIZE=10
 | API_KEY | 00000000-0000-0000-0000-000000000000 | Api key for upload images |
 | API_KEY_HEADER | key | Header name for an API key in the request. |
 | CONVERT_TO_RES | 1024x720,800x600 | List of resolutions to which images will be converted. |
+| TARGET_FORMATS | jpg | List of target image formats. Current supported is `jpg`,`webp`,`avif` |
 | MAX_FILE_SIZE | 10 | Maximum size of the file sent to the application in megabytes. |
 | CACHE_TIME | 30 | Image cache lifetime set in minutes. |
-| EXPVAR_ENABLED | 0 | Enable golang Expvar for monitoring. Data is available on `0.0.0.0:9125/debug/vars` |
-| PPROF_ENABLED | 0 | Enable golang Pprof for monitoring. Data is available on `0.0.0.0:9125/debug/pprof/` |
 
 ### Volumes configuration in container
 
