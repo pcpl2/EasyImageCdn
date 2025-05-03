@@ -32,13 +32,9 @@ COPY --from=builder --chown=10003:10002 /build/logs /var/log/eic/
 COPY --from=builder --chown=10003:10002 /build/images /var/lib/images/
 
 ENV IN_DOCKER=1 \
-    API_KEY="00000000-0000-0000-0000-000000000000" \
-    API_KEY_HEADER="key" \
     CONVERT_TO_RES="1024x720,800x600" \
     MAX_FILE_SIZE=10 \
-    CACHE_TIME=30 \
-    EXPVAR_ENABLED=0 \
-    PPROF_ENABLED=0
+    CACHE_TIME=30
 
 EXPOSE 9324
 EXPOSE 9555

@@ -43,6 +43,9 @@ version: '3.9'
 ```
 
 ## Endpoints
+All api definitions has moved to [swagger https://pcpl2.github.io/EasyImageCdn/](https://pcpl2.github.io/EasyImageCdn/?urls.primaryName=EasyImageCdn+0.3.0-beta.1)
+
+
 #### Admin:
 #### POST /v1/newImage
 For send and update image with using json payload and image bytes in base64
