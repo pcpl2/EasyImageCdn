@@ -1,7 +1,7 @@
 use actix_files as fs;
 use actix_multipart::Multipart;
+use actix_web::{error::ErrorNotFound, Result};
 use actix_web::{web, Error as ActixError, HttpRequest, HttpResponse, Responder};
-use actix_web::{Result, error::ErrorNotFound};
 use base64::{engine::general_purpose::STANDARD as base64_standard, Engine as _};
 use futures_util::stream::TryStreamExt;
 use mime::Mime;
@@ -22,7 +22,8 @@ use tokio::sync::mpsc as TokioMpsc;
 use crate::errors::AppError;
 use crate::image_processing::generate_output_path;
 use crate::models::{
-    AppState, Config, ImageIdQuery, ImageJob, JobQueuedResponse, JobState, JobStatus, NewImageRequest, TargetFormat
+    AppState, Config, ImageIdQuery, ImageJob, JobQueuedResponse, JobState, JobStatus,
+    NewImageRequest, TargetFormat,
 };
 
 fn verify_apikey(req: &HttpRequest, config: Arc<Config>) -> Result<(), HttpResponse> {
@@ -51,7 +52,10 @@ pub fn escape_file_identifier(identifier: &str) -> Option<String> {
     }
 
     let path = Path::new(&sanitized);
-    if path.components().any(|comp| matches!(comp, std::path::Component::ParentDir)) {
+    if path
+        .components()
+        .any(|comp| matches!(comp, std::path::Component::ParentDir))
+    {
         return None;
     }
 
@@ -73,7 +77,7 @@ pub async fn new_image_json(
 
     let image_id = escape_file_identifier(&payload.id);
     if image_id.is_none() {
-        return Ok(HttpResponse::BadRequest().body("Invalid image id"))
+        return Ok(HttpResponse::BadRequest().body("Invalid image id"));
     }
 
     let job = ImageJob {
@@ -114,7 +118,7 @@ pub async fn new_image_multipart(
 
     let image_id = escape_file_identifier(query.into_inner().image_id.as_str());
     if image_id.is_none() {
-        return Ok(HttpResponse::BadRequest().body("Invalid image id"))
+        return Ok(HttpResponse::BadRequest().body("Invalid image id"));
     }
 
     tracing::info!(
@@ -129,7 +133,6 @@ pub async fn new_image_multipart(
             .and_then(|d| d.get_name())
             .unwrap_or("");
         if field_name == "imageFile" {
-
             let mut field_data = Vec::new();
             while let Some(chunk) = field.try_next().await? {
                 field_data.extend_from_slice(&chunk);
@@ -162,7 +165,11 @@ pub async fn new_image_multipart(
     // -----------------------------------------
 
     state.job_sender.send(job).await?;
-    tracing::info!("Job {} queued for image id {}", job_id, image_id.clone().unwrap());
+    tracing::info!(
+        "Job {} queued for image id {}",
+        job_id,
+        image_id.clone().unwrap()
+    );
     Ok(HttpResponse::Accepted().json(JobQueuedResponse {
         job_id,
         image_id: image_id.unwrap(),
@@ -406,8 +413,12 @@ pub async fn sse_job_status(
         .streaming(body))
 }
 
-fn get_best_image_extension(accept: &str, force: &str, target_formats: Vec<TargetFormat>) -> (&'static str, &'static str) {
-    let active_formats: Vec<TargetFormat> = target_formats.clone(); 
+fn get_best_image_extension(
+    accept: &str,
+    force: &str,
+    target_formats: Vec<TargetFormat>,
+) -> (&'static str, &'static str) {
+    let active_formats: Vec<TargetFormat> = target_formats.clone();
     let preferred_formats = ["image/avif", "image/webp", "image/jpeg"];
     if force != "" {
         return match TargetFormat::from_str(force) {
@@ -452,7 +463,11 @@ fn get_best_image_extension(accept: &str, force: &str, target_formats: Vec<Targe
 }
 
 fn parse_resolution(resolution_str: &str) -> Option<(u32, u32)> {
-    if resolution_str.contains("..") || resolution_str.contains('/') || resolution_str.contains('\\') || resolution_str == "" {
+    if resolution_str.contains("..")
+        || resolution_str.contains('/')
+        || resolution_str.contains('\\')
+        || resolution_str == ""
+    {
         return None;
     }
 
@@ -470,17 +485,19 @@ fn parse_resolution(resolution_str: &str) -> Option<(u32, u32)> {
 
 pub async fn get_file(
     req: HttpRequest,
-    config: web::Data<Arc<Config>>
+    config: web::Data<Arc<Config>>,
 ) -> Result<HttpResponse, ActixError> {
     //TODO Get from cache
     //TODO Validate referer
     let qs = QString::from(req.query_string());
     let image_id = escape_file_identifier(req.match_info().query("image_id"));
     if image_id.is_none() {
-        return Ok(HttpResponse::BadRequest().body("Invalid image id"))
+        return Ok(HttpResponse::BadRequest().body("Invalid image id"));
     }
     let resolution_str = req.match_info().query("resolution");
-    let accept = req.headers().get("accept")
+    let accept = req
+        .headers()
+        .get("accept")
         .and_then(|val| val.to_str().ok())
         .unwrap_or("");
     let force_type = qs.get("extension").unwrap_or_default();
@@ -489,23 +506,29 @@ pub async fn get_file(
     //let cache_key = format!("{}_{}.{}", image_id, resolution_str, selected_ext.0);
 
     let name = match parse_resolution(resolution_str) {
-        Some((x, y)) => format!("{}_{}x{}.{}", image_id.clone().unwrap(), x, y, selected_ext.0),
+        Some((x, y)) => format!(
+            "{}_{}x{}.{}",
+            image_id.clone().unwrap(),
+            x,
+            y,
+            selected_ext.0
+        ),
         None => format!("{}_orginal.{}", image_id.clone().unwrap(), selected_ext.0),
     };
 
-    let base_path = generate_output_path(image_id.clone().unwrap().as_str()).map_err(ErrorNotFound)?;
+    let base_path =
+        generate_output_path(image_id.clone().unwrap().as_str()).map_err(ErrorNotFound)?;
     let output_path = base_path.join(name);
 
-    tracing::info!(
-        "Get file: {:?}",
-        output_path,
-    );
+    tracing::info!("Get file: {:?}", output_path,);
 
     let file = fs::NamedFile::open(&output_path).map_err(|_| ErrorNotFound("File not found"))?;
 
-    let response = file.use_etag(true)
+    let response = file
+        .use_etag(true)
         .use_last_modified(true)
         .set_content_type(Mime::from_str(selected_ext.1).unwrap())
-        .disable_content_disposition().into_response(&req);
+        .disable_content_disposition()
+        .into_response(&req);
     Ok(response)
 }

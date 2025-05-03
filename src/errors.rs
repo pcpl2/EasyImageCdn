@@ -39,15 +39,15 @@ impl From<base64::DecodeError> for AppError {
 }
 
 impl From<tokio::sync::mpsc::error::SendError<crate::models::ImageJob>> for AppError {
-     fn from(err: tokio::sync::mpsc::error::SendError<crate::models::ImageJob>) -> Self {
-         AppError::QueueError(format!("Failed to send job to queue: {}", err))
-     }
+    fn from(err: tokio::sync::mpsc::error::SendError<crate::models::ImageJob>) -> Self {
+        AppError::QueueError(format!("Failed to send job to queue: {}", err))
+    }
 }
 
 impl From<actix_multipart::MultipartError> for AppError {
-     fn from(err: actix_multipart::MultipartError) -> Self {
-         AppError::MultipartError(format!("Multipart stream error: {}", err))
-     }
+    fn from(err: actix_multipart::MultipartError) -> Self {
+        AppError::MultipartError(format!("Multipart stream error: {}", err))
+    }
 }
 
 impl From<std::io::Error> for AppError {

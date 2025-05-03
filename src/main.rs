@@ -17,6 +17,7 @@ mod worker;
 
 use models::{AppState, ImageJob, JobState};
 
+const SERVER_HOST: &str = "0.0.0.0";
 const IMAGE_SERVER_PORT: u16 = 9555;
 const ADMIN_SERVER_PORT: u16 = 9324;
 
@@ -69,7 +70,7 @@ async fn main() -> std::io::Result<()> {
                     .route("/job/{job_id}/sse", web::get().to(handlers::sse_job_status)),
             )
     })
-    .bind(("0.0.0.0", ADMIN_SERVER_PORT))?
+    .bind((SERVER_HOST, ADMIN_SERVER_PORT))?
     .run();
 
     let image_server = HttpServer::new(move || {
@@ -82,7 +83,7 @@ async fn main() -> std::io::Result<()> {
                 web::get().to(handlers::get_file),
             )
     })
-    .bind(("0.0.0.0", IMAGE_SERVER_PORT))?
+    .bind((SERVER_HOST, IMAGE_SERVER_PORT))?
     .run();
 
     tracing::info!(
@@ -95,9 +96,9 @@ async fn main() -> std::io::Result<()> {
     );
 
     match try_join(main_server, image_server).await {
-        Ok((main_res, image_res)) => {
-            tracing::info!("Main server finished: {:?}", main_res);
-            tracing::info!("Image server finished: {:?}", image_res);
+        Ok((_, _)) => {
+            tracing::info!("Main server finished");
+            tracing::info!("Image server finished");
             Ok(())
         }
         Err(e) => {

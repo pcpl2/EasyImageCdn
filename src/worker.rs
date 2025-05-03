@@ -1,10 +1,10 @@
-use tokio::sync::mpsc;
-use crate::models::{ImageJob, JobState, JobStatus};
 use crate::image_processing;
+use crate::models::{ImageJob, JobState, JobStatus};
+use tokio::sync::mpsc;
 
-use std::sync::Arc; // <-- Import Arc
-use uuid::Uuid;     // <-- Import Uuid
-use dashmap::DashMap; // <-- Import DashMap
+use dashmap::DashMap;
+use std::sync::Arc;
+use uuid::Uuid;
 
 // Zmieniamy sygnaturę, aby przyjmował AppState
 pub async fn run_worker(
@@ -26,12 +26,12 @@ pub async fn run_worker(
         });
         // ---------------------------------------------
 
-        // Klonuj mapę dla taska spawn_blocking
         let statuses_clone = job_statuses.clone();
 
         let result = tokio::task::spawn_blocking(move || {
-            image_processing::process_image(job) // Przenosimy job
-        }).await;
+            image_processing::process_image(job)
+        })
+        .await;
 
         // --- ZMIANA: Aktualizuj status po zakończeniu ---
         match result {
@@ -41,25 +41,41 @@ pub async fn run_worker(
                     // state.finished_at = Some(chrono::Utc::now()); // Opcjonalnie
                     tracing::info!("Job {} status updated to Completed", job_id);
                 });
-                tracing::info!("Job {} (image_id: {}) completed successfully", job_id, image_id);
+                tracing::info!(
+                    "Job {} (image_id: {}) completed successfully",
+                    job_id,
+                    image_id
+                );
             }
-            Ok(Err(e)) => { // Błąd zwrócony przez process_image (anyhow::Error)
+            Ok(Err(e)) => {
+                // Błąd zwrócony przez process_image (anyhow::Error)
                 let error_msg = format!("{}", e); // Konwertuj błąd na string
                 statuses_clone.entry(job_id).and_modify(|state| {
                     state.status = JobStatus::Failed(error_msg.clone()); // Klonujemy string
-                    // state.finished_at = Some(chrono::Utc::now()); // Opcjonalnie
-                     tracing::error!("Job {} status updated to Failed", job_id);
+                                                                         // state.finished_at = Some(chrono::Utc::now()); // Opcjonalnie
+                    tracing::error!("Job {} status updated to Failed", job_id);
                 });
-                tracing::error!("Job {} (image_id: {}) failed during processing: {}", job_id, image_id, error_msg);
+                tracing::error!(
+                    "Job {} (image_id: {}) failed during processing: {}",
+                    job_id,
+                    image_id,
+                    error_msg
+                );
             }
-            Err(e) => { // Błąd paniki w spawn_blocking
+            Err(e) => {
+                // Błąd paniki w spawn_blocking
                 let error_msg = format!("Task panicked: {}", e);
-                 statuses_clone.entry(job_id).and_modify(|state| {
+                statuses_clone.entry(job_id).and_modify(|state| {
                     state.status = JobStatus::Failed(error_msg.clone());
                     // state.finished_at = Some(chrono::Utc::now()); // Opcjonalnie
-                     tracing::error!("Job {} status updated to Failed due to panic", job_id);
+                    tracing::error!("Job {} status updated to Failed due to panic", job_id);
                 });
-                tracing::error!("Job {} (image_id: {}) panicked during processing: {}", job_id, image_id, error_msg);
+                tracing::error!(
+                    "Job {} (image_id: {}) panicked during processing: {}",
+                    job_id,
+                    image_id,
+                    error_msg
+                );
             }
         }
         // -------------------------------------------------

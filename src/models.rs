@@ -1,8 +1,8 @@
-use serde::{Deserialize, Serialize};
-use uuid::Uuid;
-use tokio::sync::mpsc;
 use dashmap::DashMap;
+use serde::{Deserialize, Serialize};
 use std::sync::Arc;
+use tokio::sync::mpsc;
+use uuid::Uuid;
 
 #[derive(Deserialize, Debug)]
 pub struct NewImageRequest {
@@ -10,19 +10,17 @@ pub struct NewImageRequest {
     pub image: String,
 }
 
-
 #[derive(Deserialize, Debug)]
 pub struct ImageIdQuery {
     #[serde(rename = "imageId")]
     pub image_id: String,
 }
 
-
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum TargetFormat {
     WebP,
     Avif,
-    Jpeg
+    Jpeg,
 }
 
 impl TargetFormat {
@@ -30,7 +28,7 @@ impl TargetFormat {
         match self {
             TargetFormat::WebP => "webp",
             TargetFormat::Avif => "avif",
-            TargetFormat::Jpeg => "jpg"
+            TargetFormat::Jpeg => "jpg",
         }
     }
 
@@ -52,7 +50,7 @@ pub enum JobStatus {
     Failed(String),
 }
 
-#[derive(Debug, Clone, Serialize)] 
+#[derive(Debug, Clone, Serialize)]
 pub struct JobState {
     pub status: JobStatus,
 }
