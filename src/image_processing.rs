@@ -22,7 +22,7 @@ pub fn process_image(job: ImageJob) -> Result<()> {
     match image::guess_format(&job.image_data) {
         Ok(format) => {
             if let Some(extension) = format.extensions_str().first() {
-                let original_filename = format!("{}_original.{}", job.image_id, extension);
+                let original_filename = format!("{}_source.{}", job.image_id, extension);
                 let original_output_path = output_dir.join(&original_filename);
 
                 tracing::debug!(

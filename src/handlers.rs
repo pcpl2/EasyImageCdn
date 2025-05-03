@@ -400,7 +400,7 @@ pub async fn get_file(req: HttpRequest) -> Result<HttpResponse, ActixError> {
 
     let name = match parse_resolution(resolution_str) {
         Some((x, y)) => format!("{}_{}x{}.{}", image_id, x, y, selected_ext.0),
-        None => format!("{}_original.{}", image_id, selected_ext.0),
+        None => format!("{}_orginal.{}", image_id, selected_ext.0),
     };
 
     let base_path = generate_output_path(image_id).map_err(ErrorNotFound)?;
