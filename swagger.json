@@ -1,0 +1,270 @@
+{
+	"openapi": "3.0.3",
+    "info": {
+        "title": "EasyImageCdn 0.2.3",
+        "description": "This is a api specification of EasyImageCdn.\n\nSource on Github: [https://github.com/pcpl2/EasyImageCdn](https://github.com/pcpl2/EasyImageCdn) \nIssues: [https://github.com/pcpl2/EasyImageCdn/issues](https://github.com/pcpl2/EasyImageCdn/issues)",
+        "license": {
+            "name": "BSD-2-Clause license",
+            "url": "https://github.com/pcpl2/EasyImageCdn/blob/main/LICENSE"
+        },
+        "version": "0.2.3"
+    },
+    "tags": [
+        {
+            "name": "Admin",
+            "description": "Admin endpoints"
+        },
+        {
+            "name": "Public",
+            "description": "Public endpoints"
+        }
+    ],
+    "paths": {
+        "/v1/newImage": {
+            "post": {
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Send new image as json payload",
+                "description": "Send new image as json payload",
+                "operationId": "newImagePlayload",
+                "requestBody": {
+                    "description": "Send new image as json payload",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ImagePayload"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    },
+                    "204": {
+                        "description": "Cannot read file from payload"
+                    },
+                    "400": {
+                        "description": "Other error in parsing id/content or invalid content type"
+                    },
+                    "401": {
+                        "description": "Invalid api key"
+                    }
+                },
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ]
+            }
+        },
+        "/v1/newImageMp": {
+            "post": {
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Send new image as multipart",
+                "description": "",
+                "operationId": "uploadFile",
+                "parameters": [
+                    {
+                        "name": "imageId",
+                        "in": "query",
+                        "description": "Image id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "imageFile": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "successful operation"
+                    },
+                    "400": {
+                        "description": "Other error in parsing id/content or invalid content type"
+                    },
+                    "401": {
+                        "description": "Invalid api key"
+                    }
+                },
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ]
+            }
+        },
+        "/{imageId}": {
+            "get": {
+                "tags": [
+                    "Public"
+                ],
+                "summary": "Get orginal size image",
+                "description": "",
+                "operationId": "getImageOrginalSize",
+                "parameters": [
+                    {
+                        "name": "imageId",
+                        "in": "path",
+                        "description": "Image id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "refresh",
+                        "in": "query",
+                        "description": "Disable cache for this download",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    {
+                        "in": "header",
+                        "name": "Accept",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "required": false
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Return image",
+                        "content": {
+                            "image/png": {
+                                "schema": {
+                                    "type": "string",
+                                    "format": "binary"
+                                }
+                            },
+                            "image/webp": {
+                                "schema": {
+                                    "type": "string",
+                                    "format": "binary"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Image not found"
+                    }
+                }
+            }
+        },
+        "/{imageId}/{resolution}": {
+            "get": {
+                "tags": [
+                    "Public"
+                ],
+                "summary": "Get resized image",
+                "description": "",
+                "operationId": "getImageResized",
+                "parameters": [
+                    {
+                        "name": "imageId",
+                        "in": "path",
+                        "description": "Image id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "resolution",
+                        "in": "path",
+                        "description": "Image resolution ex. 1024x720",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "refresh",
+                        "in": "query",
+                        "description": "Disable cache for this download",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    {
+                        "in": "header",
+                        "name": "Accept",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "required": false
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Return image",
+                        "content": {
+                            "image/png": {
+                                "schema": {
+                                    "type": "string",
+                                    "format": "binary"
+                                }
+                            },
+                            "image/webp": {
+                                "schema": {
+                                    "type": "string",
+                                    "format": "binary"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Image not found"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "ImagePayload": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "example": "aabb123"
+                    },
+                    "image": {
+                        "type": "string",
+                        "format": "base64",
+                        "example": "aabb="
+                    }
+                }
+            }
+        },
+        "securitySchemes": {
+            "ApiKeyAuth": {
+                "type": "apiKey",
+                "in": "header",
+                "name": "key"
+            }
+        }
+    }
+}
