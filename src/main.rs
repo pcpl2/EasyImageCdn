@@ -20,8 +20,13 @@ const ADMIN_SERVER_PORT: u16 = 9324;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    tracing_subscriber::fmt()
-        .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
+    let config = read_env();
+    let my_filter = EnvFilter::builder()
+        .with_default_directive(LevelFilter::INFO.into())
+        .from_env_lossy();
+    tracing_subscriber::registry()
+        .with(fmt::layer())
+        .with(my_filter)
         .init();
 
     // TODO: Buffer size add to config
@@ -35,7 +40,7 @@ async fn main() -> std::io::Result<()> {
     let app_state = web::Data::new(AppState {
         job_sender: job_sender.clone(),
         job_statuses: job_statuses.clone(),
-        config: Arc::new(read_env()),
+        config: Arc::new(config),
     });
 
     let main_server = HttpServer::new(move || {
