@@ -7,6 +7,7 @@ use futures_util::stream::TryStreamExt;
 use mime::Mime;
 use qstring::QString;
 use std::str::FromStr;
+use std::sync::Arc;
 use std::time::Duration;
 use uuid::Uuid;
 
@@ -20,13 +21,29 @@ use tokio::sync::mpsc as TokioMpsc;
 use crate::errors::AppError;
 use crate::image_processing::generate_output_path;
 use crate::models::{
-    AppState, ImageIdQuery, ImageJob, JobQueuedResponse, JobState, JobStatus, NewImageRequest,
+    AppState, Config, ImageIdQuery, ImageJob, JobQueuedResponse, JobState, JobStatus, NewImageRequest
 };
 
+fn verify_apikey(req: &HttpRequest, config: Arc<Config>) -> Result<(), HttpResponse> {
+    if let Some(apikey) = req.headers().get(config.api_key_header.as_str()) {
+        if apikey == config.api_key.as_str() {
+            return Ok(());
+        } else {
+            return Err(HttpResponse::Unauthorized().body("Invalid API Key"));
+        }
+    }
+    Err(HttpResponse::BadRequest().body("Missing API Key"))
+}
+
 pub async fn new_image_json(
+    req: HttpRequest,
     state: web::Data<AppState>,
     payload: web::Json<NewImageRequest>,
 ) -> Result<impl Responder, AppError> {
+    if let Err(error_response) = verify_apikey(&req, state.config.clone()) {
+        return Ok(error_response);
+    }
+
     tracing::info!("Received new image request via JSON for id: {}", payload.id);
     let image_data = base64_standard.decode(&payload.image)?;
     let job_id = Uuid::new_v4();
@@ -56,10 +73,15 @@ pub async fn new_image_json(
 }
 
 pub async fn new_image_multipart(
+    req: HttpRequest,
     state: web::Data<AppState>,
     query: web::Query<ImageIdQuery>,
     mut payload: Multipart,
 ) -> Result<impl Responder, AppError> {
+    if let Err(error_response) = verify_apikey(&req, state.config.clone()) {
+        return Ok(error_response);
+    }
+
     let image_id = query.into_inner().image_id;
     tracing::info!(
         "Received new image request via Multipart for id: {}",
@@ -117,9 +139,14 @@ pub async fn new_image_multipart(
 }
 
 pub async fn get_job_status(
+    req: HttpRequest,
     state: web::Data<AppState>,
     path: web::Path<Uuid>,
 ) -> Result<impl Responder, AppError> {
+    if let Err(error_response) = verify_apikey(&req, state.config.clone()) {
+        return Ok(error_response);
+    }
+
     let job_id = path.into_inner();
     tracing::debug!("Checking status for job: {}", job_id);
 
@@ -230,6 +257,10 @@ pub async fn websocket_job_status(
     state: web::Data<AppState>,
     path: web::Path<Uuid>,
 ) -> Result<HttpResponse, ActixError> {
+    if let Err(error_response) = verify_apikey(&req, state.config.clone()) {
+        return Ok(error_response);
+    }
+
     let job_id = path.into_inner();
     tracing::info!("Initiating WebSocket connection for job: {}", job_id);
     if !state.job_statuses.contains_key(&job_id) {
@@ -251,9 +282,14 @@ pub async fn websocket_job_status(
 }
 
 pub async fn sse_job_status(
+    req: HttpRequest,
     state: web::Data<AppState>,
     path: web::Path<Uuid>,
 ) -> Result<HttpResponse, ActixError> {
+    if let Err(error_response) = verify_apikey(&req, state.config.clone()) {
+        return Ok(error_response);
+    }
+
     let job_id = path.into_inner();
     tracing::info!("Initiating SSE connection for job: {}", job_id);
 

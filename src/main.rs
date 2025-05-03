@@ -4,6 +4,8 @@ use dashmap::DashMap;
 use futures_util::future::try_join;
 use std::sync::Arc;
 use tokio::sync::mpsc;
+use tracing::level_filters::LevelFilter;
+use tracing_subscriber::{fmt, layer::SubscriberExt, util::SubscriberInitExt, EnvFilter};
 use uuid::Uuid;
 
 mod config;
@@ -46,7 +48,9 @@ async fn main() -> std::io::Result<()> {
     let main_server = HttpServer::new(move || {
         App::new()
             .app_data(app_state.clone())
-            .app_data(web::PayloadConfig::new((app_state.config.max_file_size.clone() as usize) * 1024 * 1024))
+            .app_data(web::PayloadConfig::new(
+                (app_state.config.max_file_size.clone() as usize) * 1024 * 1024,
+            ))
             .wrap(Logger::default())
             .service(
                 web::scope("/v1")
@@ -68,12 +72,12 @@ async fn main() -> std::io::Result<()> {
 
     let image_server = HttpServer::new(move || {
         App::new()
-        .route("/{image_id}", web::get().to(handlers::get_file))
-        .route("/{image_id}/", web::get().to(handlers::get_file))
-        .route(
-              "/{image_id}/{resolution}",
-             web::get().to(handlers::get_file),
-          )
+            .route("/{image_id}", web::get().to(handlers::get_file))
+            .route("/{image_id}/", web::get().to(handlers::get_file))
+            .route(
+                "/{image_id}/{resolution}",
+                web::get().to(handlers::get_file),
+            )
     })
     .bind(("0.0.0.0", IMAGE_SERVER_PORT))?
     .run();
