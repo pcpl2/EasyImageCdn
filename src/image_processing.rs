@@ -82,12 +82,7 @@ pub fn process_image(job: ImageJob) -> Result<()> {
         );
 
         for format in &job.target_formats {
-            let file_name_prefix = format!(
-                "{}_{}x{}",
-                filename_base,
-                target_width,
-                target_height
-            );
+            let file_name_prefix = format!("{}_{}x{}", filename_base, target_width, target_height);
 
             let _ = save_image_to_format(file_name_prefix, format, &resized_img, &output_dir);
         }
@@ -95,11 +90,8 @@ pub fn process_image(job: ImageJob) -> Result<()> {
 
     //Save orginal size
     for format in &job.target_formats {
-         let file_name_prefix = format!(
-             "{}_orginal",
-             filename_base,
-         );
-         let _ = save_image_to_format(file_name_prefix, format, &img, &output_dir);
+        let file_name_prefix = format!("{}_orginal", filename_base,);
+        let _ = save_image_to_format(file_name_prefix, format, &img, &output_dir);
     }
 
     Ok(())
@@ -109,50 +101,60 @@ fn save_image_to_format(
     file_name_prefix: String,
     format: &TargetFormat,
     resized_img: &DynamicImage,
-    output_dir: &PathBuf) -> Result<()> {
-    let filename = format!(
-        "{}.{}",
-        file_name_prefix,
-        format.extension()
-    );
+    output_dir: &PathBuf,
+) -> Result<()> {
+    let filename = format!("{}.{}", file_name_prefix, format.extension());
     let output_path = output_dir.join(&filename);
 
     tracing::debug!("Saving image to: {:?} in format {:?}", output_path, format);
 
-    match format {
-        TargetFormat::WebP => {
-            resized_img
-                .save_with_format(&output_path, ImageFormat::WebP)
-                .with_context(|| {
-                    format!(
-                        "Failed to save AVIF using 'image' crate to {:?}",
-                        output_path
-                    )
-                })?;
-        }
-        TargetFormat::Avif => {
-            resized_img
-                .save_with_format(&output_path, ImageFormat::Avif)
-                .with_context(|| {
-                    format!(
-                        "Failed to save AVIF using 'image' crate to {:?}",
-                        output_path
-                    )
-                })?;
-        }
+    let saveres = match format {
+        TargetFormat::WebP => resized_img
+            .save_with_format(&output_path, ImageFormat::WebP)
+            .with_context(|| {
+                format!(
+                    "Failed to save WebP using 'image' crate to {:?}",
+                    output_path
+                )
+            }),
+
+        TargetFormat::Avif => resized_img
+            .save_with_format(&output_path, ImageFormat::Avif)
+            .with_context(|| {
+                format!(
+                    "Failed to save AVIF using 'image' crate to {:?}",
+                    output_path
+                )
+            }),
+
         TargetFormat::Jpeg => {
-            resized_img
-                .save_with_format(&output_path, ImageFormat::Jpeg)
-                .with_context(|| {
-                    format!(
-                        "Failed to save AVIF using 'image' crate to {:?}",
-                        output_path
-                    )
-                })?;
+            let rgb_image = match resized_img {
+                DynamicImage::ImageRgb8(_) => resized_img.clone(),
+                DynamicImage::ImageRgba8(_) => {
+                    DynamicImage::ImageRgb8(resized_img.to_rgb8())
+                },
+                DynamicImage::ImageLuma8(_) | DynamicImage::ImageLumaA8(_) => {
+                    DynamicImage::ImageRgb8(resized_img.to_rgb8())
+                },
+                _ => {
+                    DynamicImage::ImageRgb8(resized_img.to_rgb8())
+                }
+            };
+            rgb_image.save_with_format(&output_path, ImageFormat::Jpeg)
+                .with_context(|| format!("Failed to save JPEG using 'image' crate to {:?}", output_path))
+        }
+    };
+
+    match saveres {
+        Ok(_) => {
+            tracing::info!("Successfully saved: {:?}", output_path);
+            Ok(())
+        }
+        Err(e) => {
+            tracing::error!("Error saving image: {:?}", e);
+            Err(e)
         }
     }
-    tracing::info!("Successfully saved: {:?}", output_path);
-    Ok(())
 }
 
 pub fn generate_output_path(image_id: &str) -> Result<PathBuf> {
