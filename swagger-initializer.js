@@ -5,8 +5,12 @@ window.onload = function() {
   window.ui = SwaggerUIBundle({
     urls: [
       {
-        url: "./swagger.json",
+        url: "./swagger-0.2.3.json",
         name: "EasyImageCdn 0.2.3"
+      },
+      {
+        url: "./swagger-0.3.0-beta.1.json",
+        name: "EasyImageCdn 0.3.0-beta.1"
       },
     ],
     dom_id: '#swagger-ui',
