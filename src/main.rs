@@ -45,11 +45,13 @@ async fn main() -> std::io::Result<()> {
         config: Arc::new(config),
     });
 
+    let app_state_admin = app_state.clone();
+
     let main_server = HttpServer::new(move || {
         App::new()
-            .app_data(app_state.clone())
+            .app_data(app_state_admin.clone())
             .app_data(web::PayloadConfig::new(
-                (app_state.config.max_file_size.clone() as usize) * 1024 * 1024,
+                (app_state_admin.config.max_file_size.clone() as usize) * 1024 * 1024,
             ))
             .wrap(Logger::default())
             .service(
@@ -72,6 +74,7 @@ async fn main() -> std::io::Result<()> {
 
     let image_server = HttpServer::new(move || {
         App::new()
+            .app_data(web::Data::new(app_state.config.clone()))
             .route("/{image_id}", web::get().to(handlers::get_file))
             .route("/{image_id}/", web::get().to(handlers::get_file))
             .route(

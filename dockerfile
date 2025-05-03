@@ -29,7 +29,7 @@ FROM scratch
 COPY --from=builder --chown=10003:10002 /build/target/release/EasyImageCdn /
 COPY --from=builder-user /etc/passwd /etc/passwd
 COPY --from=builder --chown=10003:10002 /build/logs /var/log/eic/
-COPY --from=builder --chown=10003:10002 /build/images /var/lib/images/
+COPY --from=builder --chown=10003:10002 /build/images /output
 
 ENV IN_DOCKER=1 \
     CONVERT_TO_RES="1024x720,800x600" \

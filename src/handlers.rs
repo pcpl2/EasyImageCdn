@@ -22,7 +22,7 @@ use tokio::sync::mpsc as TokioMpsc;
 use crate::errors::AppError;
 use crate::image_processing::generate_output_path;
 use crate::models::{
-    AppState, Config, ImageIdQuery, ImageJob, JobQueuedResponse, JobState, JobStatus, NewImageRequest
+    AppState, Config, ImageIdQuery, ImageJob, JobQueuedResponse, JobState, JobStatus, NewImageRequest, TargetFormat
 };
 
 fn verify_apikey(req: &HttpRequest, config: Arc<Config>) -> Result<(), HttpResponse> {
@@ -406,28 +406,46 @@ pub async fn sse_job_status(
         .streaming(body))
 }
 
-fn get_best_image_extension(accept: &str, force: &str) -> (&'static str, &'static str) {
+fn get_best_image_extension(accept: &str, force: &str, target_formats: Vec<TargetFormat>) -> (&'static str, &'static str) {
+    let active_formats: Vec<TargetFormat> = target_formats.clone(); 
     let preferred_formats = ["image/avif", "image/webp", "image/jpeg"];
     if force != "" {
-        return match force {
-            "avif" => ("avif", "image/avif"),
-            "webp" => ("webp", "image/webp"),
-            "jpeg" => ("jpg", "image/jpeg"),
+        return match TargetFormat::from_str(force) {
+            Ok(format) if active_formats.contains(&format) => (
+                format.extension(),
+                match format {
+                    TargetFormat::Avif => "image/avif",
+                    TargetFormat::WebP => "image/webp",
+                    TargetFormat::Jpeg => "image/jpeg",
+                },
+            ),
             _ => ("jpg", "image/jpeg"),
         };
     }
+
     let accept_parts: Vec<&str> = accept
         .split(',')
         .map(|part| part.trim().split(';').next().unwrap_or(""))
         .collect();
+
     for &preferred in &preferred_formats {
         if accept_parts.contains(&preferred) {
-            return match preferred {
-                "image/avif" => ("avif", "image/avif"),
-                "image/webp" => ("webp", "image/webp"),
-                "image/jpeg" => ("jpg", "image/jpeg"),
-                _ => ("jpg", "image/jpeg"),
+            let target_format = match preferred {
+                "image/avif" => TargetFormat::Avif,
+                "image/webp" => TargetFormat::WebP,
+                "image/jpeg" => TargetFormat::Jpeg,
+                _ => TargetFormat::Jpeg,
             };
+            if active_formats.contains(&target_format) {
+                return (
+                    target_format.extension(),
+                    match target_format {
+                        TargetFormat::Avif => "image/avif",
+                        TargetFormat::WebP => "image/webp",
+                        TargetFormat::Jpeg => "image/jpeg",
+                    },
+                );
+            }
         }
     }
     ("jpg", "image/jpeg")
@@ -450,7 +468,10 @@ fn parse_resolution(resolution_str: &str) -> Option<(u32, u32)> {
     Some((x, y))
 }
 
-pub async fn get_file(req: HttpRequest) -> Result<HttpResponse, ActixError> {
+pub async fn get_file(
+    req: HttpRequest,
+    config: web::Data<Arc<Config>>
+) -> Result<HttpResponse, ActixError> {
     //TODO Get from cache
     //TODO Validate referer
     let qs = QString::from(req.query_string());
@@ -463,7 +484,7 @@ pub async fn get_file(req: HttpRequest) -> Result<HttpResponse, ActixError> {
         .and_then(|val| val.to_str().ok())
         .unwrap_or("");
     let force_type = qs.get("extension").unwrap_or_default();
-    let selected_ext = get_best_image_extension(accept, force_type);
+    let selected_ext = get_best_image_extension(accept, force_type, config.target_formats.clone());
 
     //let cache_key = format!("{}_{}.{}", image_id, resolution_str, selected_ext.0);
 
