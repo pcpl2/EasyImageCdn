@@ -1,7 +1,12 @@
 use crate::models::{ImageJob, TargetFormat};
 use anyhow::{Context, Result};
 use image::{DynamicImage, EncodableLayout, GenericImageView, ImageFormat};
-use std::{fs::{self, File}, io::Write, path::PathBuf, time::Instant};
+use std::{
+    fs::{self, File},
+    io::Write,
+    path::PathBuf,
+    time::Instant,
+};
 
 use xxhash_rust::const_xxh3::xxh3_64 as const_xxh3;
 const OUTPUT_BASE_DIR: &'static str = "output"; // TODO: Move to config
@@ -110,16 +115,15 @@ fn save_image_to_format(
     tracing::debug!("Saving image to: {:?} in format {:?}", output_path, format);
 
     let saveres = match format {
-        TargetFormat::WebP =>{ 
+        TargetFormat::WebP => {
             let rgb_image = match resized_img {
                 DynamicImage::ImageRgb8(_) => resized_img.clone(),
                 DynamicImage::ImageRgba8(_) => resized_img.clone(),
-                DynamicImage::ImageLuma8(_) | DynamicImage::ImageLumaA8(_) => {
-                    DynamicImage::ImageRgb8(resized_img.to_rgb8())
-                }
+                DynamicImage::ImageLumaA8(_) => DynamicImage::ImageRgba8(resized_img.to_rgba8()),
+                DynamicImage::ImageLuma8(_) => DynamicImage::ImageRgb8(resized_img.to_rgb8()),
                 _ => DynamicImage::ImageRgb8(resized_img.to_rgb8()),
             };
-            
+
             // rgb_image
             // .save_with_format(&output_path, ImageFormat::WebP)
             // .with_context(|| {
@@ -131,7 +135,7 @@ fn save_image_to_format(
 
             let encoder = webp::Encoder::from_image(&rgb_image).unwrap();
             let memory = encoder.encode(80.0);
-        
+
             let mut f = File::create(&output_path)?;
             f.write_all(memory.as_bytes()).with_context(|| {
                 format!(
