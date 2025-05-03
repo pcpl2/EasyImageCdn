@@ -1,7 +1,7 @@
 use crate::models::{ImageJob, TargetFormat};
 use anyhow::{Context, Result};
 use image::{DynamicImage, GenericImageView, ImageFormat};
-use std::{fs, path::PathBuf};
+use std::{fs, path::PathBuf, time::Instant};
 
 use xxhash_rust::const_xxh3::xxh3_64 as const_xxh3;
 const OUTPUT_BASE_DIR: &'static str = "output"; // TODO: Move to config
@@ -62,7 +62,7 @@ pub fn process_image(job: ImageJob) -> Result<()> {
         .image_id
         .split(|c| c == '/' || c == '\\')
         .last()
-        .unwrap_or(&job.image_id); // Podstawowa nazwa pliku
+        .unwrap_or(&job.image_id);
 
     for (target_width, target_height) in &job.target_resolutions {
         // TODO: Dodać logikę skalowania (np. zachowanie proporcji, nie powiększanie)
@@ -103,6 +103,7 @@ fn save_image_to_format(
     resized_img: &DynamicImage,
     output_dir: &PathBuf,
 ) -> Result<()> {
+    let start = Instant::now();
     let filename = format!("{}.{}", file_name_prefix, format.extension());
     let output_path = output_dir.join(&filename);
 
@@ -130,24 +131,28 @@ fn save_image_to_format(
         TargetFormat::Jpeg => {
             let rgb_image = match resized_img {
                 DynamicImage::ImageRgb8(_) => resized_img.clone(),
-                DynamicImage::ImageRgba8(_) => {
-                    DynamicImage::ImageRgb8(resized_img.to_rgb8())
-                },
+                DynamicImage::ImageRgba8(_) => DynamicImage::ImageRgb8(resized_img.to_rgb8()),
                 DynamicImage::ImageLuma8(_) | DynamicImage::ImageLumaA8(_) => {
                     DynamicImage::ImageRgb8(resized_img.to_rgb8())
-                },
-                _ => {
-                    DynamicImage::ImageRgb8(resized_img.to_rgb8())
                 }
+                _ => DynamicImage::ImageRgb8(resized_img.to_rgb8()),
             };
-            rgb_image.save_with_format(&output_path, ImageFormat::Jpeg)
-                .with_context(|| format!("Failed to save JPEG using 'image' crate to {:?}", output_path))
+            rgb_image
+                .save_with_format(&output_path, ImageFormat::Jpeg)
+                .with_context(|| {
+                    format!(
+                        "Failed to save JPEG using 'image' crate to {:?}",
+                        output_path
+                    )
+                })
         }
     };
 
+    let duration = start.elapsed();
+    
     match saveres {
         Ok(_) => {
-            tracing::info!("Successfully saved: {:?}", output_path);
+            tracing::info!("Successfully saved: {:?} in {:?}", output_path, duration);
             Ok(())
         }
         Err(e) => {
