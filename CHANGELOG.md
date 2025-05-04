@@ -1,3 +1,9 @@
+# 0.3.0 (??.??.2025)
+
+* Rewrited app to Rust
+* Added support for avif
+* Added conversion job status
+
 # 0.2.3 (27.02.2024)
 
 * Updated fiber to 2.52.1
