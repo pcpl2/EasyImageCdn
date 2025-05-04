@@ -15,7 +15,7 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4.2.2
 
-    - name: Set up Go
+    - name: Set up rust
       uses: actions-rust-lang/setup-rust-toolchain@v1.12.0
       with:
         toolchain: stable
