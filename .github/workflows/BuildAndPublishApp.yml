@@ -1,11 +1,12 @@
 name: Publish new version
 
 on:
-    workflow_dispatch:
-      inputs:
-        version:
-          description: 'Server version (format: Major.Minor.HotFix, example: 1.2.12)'
-          required: true
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Server version (format: Major.Minor.HotFix, example: 1.2.12)'
+        required: true
+
 jobs:
   build:
     name: Build and publish
