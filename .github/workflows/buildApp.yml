@@ -9,7 +9,13 @@ on:
 jobs:
   build_non_docker:
     name: Build non docker version
-    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        include:
+        - os: ubuntu-24.04
+        - os: ubuntu-24.04-arm
+
+    runs-on: ${{ matrix.os }}
 
     steps:
     - name: Checkout repository
