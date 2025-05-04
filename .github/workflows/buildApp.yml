@@ -9,14 +9,14 @@ on:
 jobs:
   build_non_docker:
     name: Build non docker version
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4.1.7
+      uses: actions/checkout@v4.2.2
 
     - name: Set up Go
-      uses: actions/setup-go@v5.0.2
+      uses: actions/setup-go@v5.4.0
       with:
         go-version-file: go.mod
         cache-dependency-path: go.sum
@@ -27,14 +27,11 @@ jobs:
       run:
         sudo apt-get update -qq -o Acquire::Retries=3
 
-    - name: Prepare go modules
-      run: go env -w GO111MODULE=auto CGO_ENABLED=1 GOOS=linux && go get -d -v
-
     - name: Start build script
-      run: go build -v -ldflags="-w -s -X 'easy-image-cdn.pcpl2lab.ovh/app/build.Version=latest' -X 'easy-image-cdn.pcpl2lab.ovh/app/build.Time=$(date)'" ./...
+      run: cargo build --bins --release
 
-    - name: Run image converter test
-      run: go test -v ./imageConverter
+    # - name: Run image converter test
+    #   run: go test -v ./imageConverter
 
   build_docker:
     name: Build docker version
@@ -42,20 +39,20 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4.1.7
+        uses: actions/checkout@v4.2.2
 
       - name: Set up QEMU
         id: qemu
-        uses: docker/setup-qemu-action@v3.2.0
+        uses: docker/setup-qemu-action@v3.6.0
         with:
-          image: tonistiigi/binfmt:qemu-v8.1.5
+          image: tonistiigi/binfmt:qemu-v9.2.2
           platforms: all
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3.6.1
+        uses: docker/setup-buildx-action@v3.10.0
 
       - name: buildDocker
-        uses: docker/build-push-action@v6.7.0
+        uses: docker/build-push-action@v6.16.0
         with:
           context: .
           push: false
