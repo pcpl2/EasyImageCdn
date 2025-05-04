@@ -3,3 +3,6 @@
 .env
 .env.example
 .git
+target/
+.vscode
+testImages

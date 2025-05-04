@@ -35,7 +35,7 @@ jobs:
         password: ${{ secrets.DH_TOKEN }}
 
     - name: buildDocker
-      uses: docker/build-push-action@v6.15.0
+      uses: docker/build-push-action@v6.16.0
       with:
         context: .
         push: true

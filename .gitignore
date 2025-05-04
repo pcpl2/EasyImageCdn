@@ -6,3 +6,10 @@ imageCdn
 
 easy-image-cdn.pcpl2lab.ovh
 __debug_bin*
+
+# Added by cargo
+
+/target
+output/
+
+.DS_Store

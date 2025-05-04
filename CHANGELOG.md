@@ -1,8 +1,8 @@
-# 0.2.4 (??.??.2025)
+# 0.3.0 (??.??.2025)
 
-* Updated fiber to 2.52.6
-* Updated go image to 0.26.0
-* Updated go version to 1.24
+* Rewrited app to Rust
+* Added support for avif
+* Added conversion job status
 
 # 0.2.3 (27.02.2024)
 

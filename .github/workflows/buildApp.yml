@@ -9,17 +9,22 @@ on:
 jobs:
   build_non_docker:
     name: Build non docker version
-    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        include:
+        - os: ubuntu-24.04
+        - os: ubuntu-24.04-arm
+
+    runs-on: ${{ matrix.os }}
 
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4.2.2
 
-    - name: Set up Go
-      uses: actions/setup-go@v5.4.0
+    - name: Set up rust
+      uses: actions-rust-lang/setup-rust-toolchain@v1.12.0
       with:
-        go-version-file: go.mod
-        cache-dependency-path: go.sum
+        toolchain: stable
 
     - name: Update apt
       env:
@@ -27,14 +32,11 @@ jobs:
       run:
         sudo apt-get update -qq -o Acquire::Retries=3
 
-    - name: Prepare go modules
-      run: go env -w GO111MODULE=auto CGO_ENABLED=1 GOOS=linux && go get -d -v
-
     - name: Start build script
-      run: go build -v -ldflags="-w -s -X 'easy-image-cdn.pcpl2lab.ovh/app/build.Version=latest' -X 'easy-image-cdn.pcpl2lab.ovh/app/build.Time=$(date)'" ./...
+      run: cargo build --bins --release
 
-    - name: Run image converter test
-      run: go test -v ./imageConverter
+    # - name: Run image converter test
+    #   run: go test -v ./imageConverter
 
   build_docker:
     name: Build docker version
@@ -52,7 +54,7 @@ jobs:
         uses: actions/checkout@v4.2.2
 
       - name: buildDocker
-        uses: docker/build-push-action@v6.15.0
+        uses: docker/build-push-action@v6.16.0
         with:
           context: .
           push: false
