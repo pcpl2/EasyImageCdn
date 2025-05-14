@@ -6,7 +6,10 @@ on:
       version:
         description: 'Server version (format: Major.Minor.HotFix, example: 1.2.12)'
         required: true
-
+      prerelease:
+        description: 'Is Prerelease version'
+        required: true
+        type: boolean
 jobs:
   build:
     name: Build and publish
@@ -61,4 +64,5 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         name: Release ${{ github.event.inputs.version }}
+        prerelease: ${{ github.event.inputs.prerelease }}
         tag_name: ${{ github.event.inputs.version }}
