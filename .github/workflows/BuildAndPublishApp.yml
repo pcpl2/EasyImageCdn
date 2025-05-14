@@ -12,13 +12,15 @@ on:
         type: boolean
 jobs:
   build:
-    name: Build and publish
+    name: Build and publish  ${{ matrix.os }}
     strategy:
       matrix:
         include:
         - os: ubuntu-24.04
+          arch: amd64
           platforms: linux/amd64
         - os: ubuntu-24.04-arm
+          arch: arm64
           platforms: linux/arm64
 
     runs-on: ${{ matrix.os }}
@@ -40,20 +42,55 @@ jobs:
         username: ${{ secrets.DH_USERNAME }}
         password: ${{ secrets.DH_TOKEN }}
 
-    - name: buildDocker
+    - name: Build and push image ${{ matrix.platforms }}
       uses: docker/build-push-action@v6.16.0
       with:
         context: .
-        push: true
         platforms: ${{ matrix.platforms }}
-        tags: pcpl2/easy_image_cdn:latest,pcpl2/easy_image_cdn:${{ github.event.inputs.version }},ghcr.io/pcpl2/easy_image_cdn:latest,ghcr.io/pcpl2/easy_image_cdn:${{ github.event.inputs.version }}
+        push: true
+        tags: |
+          pcpl2/easy_image_cdn:${{ github.event.inputs.version }}-${{ matrix.arch }}
+          ghcr.io/pcpl2/easy_image_cdn:${{ github.event.inputs.version }}-${{ matrix.arch }}
         build-args: |
-            App_Version=${{ github.event.inputs.version }}
+          App_Version=${{ github.event.inputs.version }}
+
+  manifest:
+    name: Create multiarch manifest
+    runs-on: ubuntu-latest
+    needs: [build]
+
+    steps:
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3.4.0
+      with:
+        username: ${{ secrets.DH_USERNAME }}
+        password: ${{ secrets.DH_TOKEN }}
+
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v3.4.0
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GH_TOKEN }}
+
+    - name: Create and push manifest (Docker Hub)
+      run: |
+        docker manifest create pcpl2/easy_image_cdn:${{ github.event.inputs.version }} \
+          pcpl2/easy_image_cdn:${{ github.event.inputs.version }}-amd64 \
+          pcpl2/easy_image_cdn:${{ github.event.inputs.version }}-arm64
+        docker manifest push pcpl2/easy_image_cdn:${{ github.event.inputs.version }}
+
+    - name: Create and push manifest (GHCR)
+      run: |
+        docker manifest create ghcr.io/pcpl2/easy_image_cdn:${{ github.event.inputs.version }} \
+          ghcr.io/pcpl2/easy_image_cdn:${{ github.event.inputs.version }}-amd64 \
+          ghcr.io/pcpl2/easy_image_cdn:${{ github.event.inputs.version }}-arm64
+        docker manifest push ghcr.io/pcpl2/easy_image_cdn:${{ github.event.inputs.version }}
 
   createRelease:
     name: Create Release ${{ github.event.inputs.version }}
     runs-on: ubuntu-latest
-    needs: [ build ]
+    needs: [ manifest ]
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4.2.2
