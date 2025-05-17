@@ -60,10 +60,9 @@ pub struct ImageJob {
     pub job_id: Uuid,
     pub image_id: String,
     pub image_data: Vec<u8>,
-    //pub original_filename: Option<String>,
-    // TODO: move to configuration
     pub target_resolutions: Vec<(u32, u32)>,
     pub target_formats: Vec<TargetFormat>,
+    pub avif_quality: AVIFEncodeParameters,
 }
 
 #[derive(Serialize)]
@@ -80,6 +79,13 @@ pub struct AppState {
     pub config: Arc<Config>,
 }
 
+
+#[derive(Debug, Clone)]
+pub struct AVIFEncodeParameters {
+    pub quality: f32,
+    pub speed: u8,
+}
+
 #[derive(Debug)]
 pub struct Config {
     pub api_key: String,
@@ -88,4 +94,5 @@ pub struct Config {
     pub max_file_size: u32,
     pub target_formats: Vec<TargetFormat>,
     pub cache_control_header: String,
+    pub avif_encode_parameters: AVIFEncodeParameters,
 }

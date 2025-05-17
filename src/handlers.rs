@@ -87,6 +87,7 @@ pub async fn new_image_json(
         image_data,
         target_resolutions: state.config.convert_to_res.clone(),
         target_formats: state.config.target_formats.clone(),
+        avif_quality: state.config.avif_encode_parameters.clone(),
     };
 
     state.job_statuses.insert(
@@ -155,6 +156,7 @@ pub async fn new_image_multipart(
         image_data,
         target_resolutions: state.config.convert_to_res.clone(),
         target_formats: state.config.target_formats.clone(),
+        avif_quality: state.config.avif_encode_parameters.clone(),
     };
 
     state.job_statuses.insert(

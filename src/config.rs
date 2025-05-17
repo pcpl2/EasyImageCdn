@@ -1,7 +1,7 @@
 use dotenv::dotenv;
 use std::env;
 
-use crate::models::{Config, TargetFormat};
+use crate::models::{AVIFEncodeParameters, Config, TargetFormat};
 
 pub fn read_env() -> Config {
     // Check if running in Docker
@@ -22,6 +22,24 @@ pub fn read_env() -> Config {
         .expect("MAX_FILE_SIZE must be a valid u32");
     let target_formats = env::var("TARGET_FORMATS").unwrap_or_else(|_| "jpg".to_string());
     let cache_control_header = env::var("CACHE_CONTROL_HEADER").unwrap_or_else(|_| "max-age=180, public".to_string());
+
+    let quality: f32 = env::var("AVIF_QUALITY")
+        .ok()
+        .and_then(|v| v.parse().ok())
+        .unwrap_or(70.0);
+
+    if !(0.0..=100.0).contains(&quality) {
+        panic!("AVIF_QUALITY must be in range 0.0..=100.0 (got {})", quality);
+    }
+
+    let speed: u8 = env::var("AVIF_SPEED")
+        .ok()
+        .and_then(|v| v.parse().ok())
+        .unwrap_or(6);
+
+    if speed > 10 {
+        panic!("AVIF_SPEED must be in range 0..=10 (got {})", speed);
+    }
 
     // Parse resolutions
     let convert_to_res: Vec<(u32, u32)> = convert_to_res
@@ -50,5 +68,6 @@ pub fn read_env() -> Config {
         max_file_size,
         target_formats,
         cache_control_header,
+        avif_encode_parameters: AVIFEncodeParameters { quality, speed },
     }
 }

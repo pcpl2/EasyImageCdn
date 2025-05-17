@@ -1,4 +1,4 @@
-use crate::models::{ImageJob, TargetFormat};
+use crate::models::{AVIFEncodeParameters, ImageJob, TargetFormat};
 use anyhow::{Context, Result};
 use image::{DynamicImage, EncodableLayout, GenericImageView, ImageFormat};
 use ravif::{BitDepth, Encoder, Img};
@@ -92,14 +92,14 @@ pub fn process_image(job: ImageJob) -> Result<()> {
         for format in &job.target_formats {
             let file_name_prefix = format!("{}_{}x{}", filename_base, target_width, target_height);
 
-            let _ = save_image_to_format(file_name_prefix, format, &resized_img, &output_dir);
+            let _ = save_image_to_format(file_name_prefix, format, &job.avif_quality, &resized_img, &output_dir);
         }
     }
 
     //Save orginal size
     for format in &job.target_formats {
         let file_name_prefix = format!("{}_orginal", filename_base,);
-        let _ = save_image_to_format(file_name_prefix, format, &img, &output_dir);
+        let _ = save_image_to_format(file_name_prefix, format, &job.avif_quality, &img, &output_dir);
     }
 
     Ok(())
@@ -108,6 +108,7 @@ pub fn process_image(job: ImageJob) -> Result<()> {
 fn save_image_to_format(
     file_name_prefix: String,
     format: &TargetFormat,
+    avif_quality: &AVIFEncodeParameters,
     resized_img: &DynamicImage,
     output_dir: &PathBuf,
 ) -> Result<()> {
@@ -148,7 +149,7 @@ fn save_image_to_format(
             })
         }
 
-        TargetFormat::Avif => save_as_avif_fast(resized_img, &output_path).with_context(|| {
+        TargetFormat::Avif => save_as_avif_fast(resized_img, avif_quality, &output_path).with_context(|| {
             format!(
                 "Failed to save AVIF using 'image' crate to {:?}",
                 output_path
@@ -189,7 +190,7 @@ fn save_image_to_format(
     }
 }
 
-fn save_as_avif_fast(img: &DynamicImage, output_path: &PathBuf) -> Result<(), anyhow::Error> {
+fn save_as_avif_fast(img: &DynamicImage, avif_quality: &AVIFEncodeParameters, output_path: &PathBuf) -> Result<(), anyhow::Error> {
     let rgba8 = img.to_rgba8();
     let (width, height) = img.dimensions();
 
@@ -199,9 +200,9 @@ fn save_as_avif_fast(img: &DynamicImage, output_path: &PathBuf) -> Result<(), an
     let input_img = Img::new(rgba_slice, width as usize, height as usize);
 
     let encoder = Encoder::new()
-        .with_quality(80.0)
-        .with_alpha_quality(80.0)
-        .with_speed(6)
+        .with_quality(avif_quality.quality)
+        .with_alpha_quality(avif_quality.quality)
+        .with_speed(avif_quality.speed)
         .with_bit_depth(BitDepth::Eight);
 
     let avif_data = encoder

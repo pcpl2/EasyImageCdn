@@ -67,6 +67,8 @@ TARGET_FORMATS=jpg,webp,avif
 | TARGET_FORMATS | jpg | List of target image formats. Current supported is `jpg`,`webp`,`avif` |
 | MAX_FILE_SIZE | 10 | Maximum size of the file sent to the application in megabytes. |
 | CACHE_CONTROL_HEADER | max-age=180, public | Sets HTTP header `Cache-Control` for control caching in browsers. [More information](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Cache-Control) |
+| AVIF_QUALITY | 70.0 | Quality `1..=100`. Panics if out of range. |
+| AVIF_SPEED | 6 | 1 = very very slow, but max compression.<br>10 = quick, but larger file sizes and lower quality.<br><br>Panics if outside `1..=10`.  |
 | CACHE_TIME | 30 | Image cache lifetime set in minutes. **(Not implemented yet)** |
 
 ### Volumes configuration in container
