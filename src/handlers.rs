@@ -1,5 +1,6 @@
 use actix_files as fs;
 use actix_multipart::Multipart;
+use actix_web::http::header::{self, HeaderValue};
 use actix_web::{error::ErrorNotFound, Result};
 use actix_web::{web, Error as ActixError, HttpRequest, HttpResponse, Responder};
 use base64::{engine::general_purpose::STANDARD as base64_standard, Engine as _};
@@ -524,11 +525,13 @@ pub async fn get_file(
 
     let file = fs::NamedFile::open(&output_path).map_err(|_| ErrorNotFound("File not found"))?;
 
-    let response = file
+    let mut response = file
         .use_etag(true)
         .use_last_modified(true)
         .set_content_type(Mime::from_str(selected_ext.1).unwrap())
         .disable_content_disposition()
         .into_response(&req);
+
+    response.headers_mut().append(header::CACHE_CONTROL, HeaderValue::from_str(config.cache_control_header.clone().as_str()).unwrap());
     Ok(response)
 }

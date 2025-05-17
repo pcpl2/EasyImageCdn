@@ -42,6 +42,7 @@ COPY --from=builder --chown=10003:10002 /build/images /output
 ENV IN_DOCKER=1 \
     CONVERT_TO_RES="1024x720,800x600" \
     MAX_FILE_SIZE=10 \
+    CACHE_CONTROL_HEADER="max-age=180, public" \
     CACHE_TIME=30
 
 EXPOSE 9324

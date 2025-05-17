@@ -61,11 +61,12 @@ TARGET_FORMATS=jpg,webp,avif
 
 | Configuration key | Default value | Description |
 | ----------- | --------- | ----------- |
-| API_KEY | 00000000-0000-0000-0000-000000000000 | Api key for upload images |
-| API_KEY_HEADER | key | Header name for an API key in the request. |
+| API_KEY |  | Api key for upload images. If not set application throw error. |
+| API_KEY_HEADER |  | Header name for an API key in the request. If not set application throw error. |
 | CONVERT_TO_RES | 1024x720,800x600 | List of resolutions to which images will be converted. |
 | TARGET_FORMATS | jpg | List of target image formats. Current supported is `jpg`,`webp`,`avif` |
 | MAX_FILE_SIZE | 10 | Maximum size of the file sent to the application in megabytes. |
+| CACHE_CONTROL_HEADER | max-age=180, public | Sets HTTP header `Cache-Control` for control caching in browsers. [More information](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Cache-Control) |
 | CACHE_TIME | 30 | Image cache lifetime set in minutes. **(Not implemented yet)** |
 
 ### Volumes configuration in container

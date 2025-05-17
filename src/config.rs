@@ -21,6 +21,7 @@ pub fn read_env() -> Config {
         .parse()
         .expect("MAX_FILE_SIZE must be a valid u32");
     let target_formats = env::var("TARGET_FORMATS").unwrap_or_else(|_| "jpg".to_string());
+    let cache_control_header = env::var("CACHE_CONTROL_HEADER").unwrap_or_else(|_| "max-age=180, public".to_string());
 
     // Parse resolutions
     let convert_to_res: Vec<(u32, u32)> = convert_to_res
@@ -48,5 +49,6 @@ pub fn read_env() -> Config {
         convert_to_res,
         max_file_size,
         target_formats,
+        cache_control_header,
     }
 }

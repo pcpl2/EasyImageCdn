@@ -87,4 +87,5 @@ pub struct Config {
     pub convert_to_res: Vec<(u32, u32)>,
     pub max_file_size: u32,
     pub target_formats: Vec<TargetFormat>,
+    pub cache_control_header: String,
 }
