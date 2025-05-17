@@ -1,12 +1,15 @@
 use crate::models::{ImageJob, TargetFormat};
 use anyhow::{Context, Result};
 use image::{DynamicImage, EncodableLayout, GenericImageView, ImageFormat};
+use ravif::{BitDepth, Encoder, Img};
 use std::{
     fs::{self, File},
     io::Write,
     path::PathBuf,
     time::Instant,
 };
+use bytemuck::cast_slice;
+use rgb::RGBA;
 
 use xxhash_rust::const_xxh3::xxh3_64 as const_xxh3;
 const OUTPUT_BASE_DIR: &'static str = "output"; // TODO: Move to config
@@ -145,14 +148,12 @@ fn save_image_to_format(
             })
         }
 
-        TargetFormat::Avif => resized_img
-            .save_with_format(&output_path, ImageFormat::Avif)
-            .with_context(|| {
-                format!(
-                    "Failed to save AVIF using 'image' crate to {:?}",
-                    output_path
-                )
-            }),
+        TargetFormat::Avif => save_as_avif_fast(resized_img, &output_path).with_context(|| {
+            format!(
+                "Failed to save AVIF using 'image' crate to {:?}",
+                output_path
+            )
+        }),
 
         TargetFormat::Jpeg => {
             let rgb_image = match resized_img {
@@ -186,6 +187,33 @@ fn save_image_to_format(
             Err(e)
         }
     }
+}
+
+fn save_as_avif_fast(img: &DynamicImage, output_path: &PathBuf) -> Result<(), anyhow::Error> {
+    let rgba8 = img.to_rgba8();
+    let (width, height) = img.dimensions();
+
+    let raw = rgba8.into_raw();
+    let rgba_slice: &[RGBA<u8>] = cast_slice(&raw);
+
+    let input_img = Img::new(rgba_slice, width as usize, height as usize);
+
+    let encoder = Encoder::new()
+        .with_quality(80.0)
+        .with_alpha_quality(80.0)
+        .with_speed(6)
+        .with_bit_depth(BitDepth::Eight);
+
+    let avif_data = encoder
+        .encode_rgba(input_img)
+        .context("Error while enconding to AVIF")?;
+
+    let mut file = File::create(output_path)
+        .context("Error while createing output file")?;
+    file.write_all(&avif_data.avif_file)
+        .context("Error while saving file")?;
+
+    Ok(())
 }
 
 pub fn generate_output_path(image_id: &str) -> Result<PathBuf> {

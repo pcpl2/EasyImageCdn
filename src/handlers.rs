@@ -520,7 +520,7 @@ pub async fn get_file(
         generate_output_path(image_id.clone().unwrap().as_str()).map_err(ErrorNotFound)?;
     let output_path = base_path.join(name);
 
-    tracing::info!("Get file: {:?}", output_path,);
+    //tracing::info!("Get file: {:?}", output_path,);
 
     let file = fs::NamedFile::open(&output_path).map_err(|_| ErrorNotFound("File not found"))?;
 
